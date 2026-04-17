@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Беттинг Терминал PRO | Ультра</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(71, 85, 105, 0.8); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 1); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+
+        // --- ИКОНКИ ---
+        const Calculator = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>;
+        const CircleDollarSign = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>;
+        const Goal = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+        const Percent = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>;
+        const AlertCircle = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
+        const ChevronDown = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="6 9 12 15 18 9"/></svg>;
+        const ShieldAlert = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>;
+        const Layers = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></svg>;
+        const Save = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>;
+        const HistoryIcon = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>;
+        const Trash2 = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>;
+        const CheckCircle = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
+        const XCircle = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>;
+        const Activity = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="22 12 18 12 15 21 9 3 6 6 12 2 12"></polyline></svg>;
+        const Target = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>;
+        const BookOpen = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>;
+        const Plus = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
+        const Edit2 = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>;
+        const ArrowLeft = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>;
+        const RotateCcw = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>;
+        const Network = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="16" y="16" width="6" height="6" rx="1"></rect><rect x="2" y="16" width="6" height="6" rx="1"></rect><rect x="9" y="2" width="6" height="6" rx="1"></rect><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"></path><path d="M12 12V8"></path></svg>;
+        const TrendingUp = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>;
+        const Clock = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>;
+        const Combine = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="8" y="8" width="8" height="8" rx="2" ry="2"></rect><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M14 22v-4a2 2 0 0 1 2-2h4"></path><path d="M10 2v4a2 2 0 0 1-2 2H4"></path><path d="M10 22v-4a2 2 0 0 0-2-2H4"></path></svg>;
+        const Settings = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
+        const Zap = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>;
+        const User = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+        const ShieldCheck = ({ size = 24, className = "" }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>;
+
+        // Вспомогательная функция комбинаторики
+        const getCombinations = (arr, k) => {
+            if (k === 1) return arr.map(a => [a]);
+            if (k === arr.length) return [arr];
+            if (k > arr.length) return [];
+            const combos = [];
+            arr.forEach((item, i) => {
+                const smallerCombos = getCombinations(arr.slice(i + 1), k - 1);
+                smallerCombos.forEach(sc => combos.push([item, ...sc]));
+            });
+            return combos;
+        };
+
+        const formatUSD = (val, maxDigits = 2) => val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: maxDigits }) + ' $';
+
+        function App() {
+          // --- ГЛОБАЛЬНЫЙ СТЕЙТ ---
+          const [mainBank, setMainBank] = useState(() => parseFloat(localStorage.getItem('dutchingMainBank')) || 1000);
+          const [bank, setBank] = useState(50);
+          const [minimumBet, setMinimumBet] = useState(0.20);
+          const [historyData, setHistoryData] = useState(() => JSON.parse(localStorage.getItem('dutchingHistoryData')) || []);
+          const [activeTab, setActiveTab] = useState('classic');
+
+          // --- СОСТОЯНИЯ: КЛАССИКА ---
+          const [classicCount, setClassicCount] = useState(3);
+          const [placedBetsClassic, setPlacedBetsClassic] = useState(new Set());
+          const [classicModes, setClassicModes] = useState({});
+          const [classicMatches, setClassicMatches] = useState([
+            { id: 1, name: 'Atletic - Roma', outcomes: [{ label: 'W1', odd: 2.0, active: true }, { label: 'X', odd: 3.6, active: true }, { label: 'W2', odd: 4.1, active: false }] },
+            { id: 2, name: 'Vitoria G. - Betis', outcomes: [{ label: 'W1', odd: 3.1, active: false }, { label: 'X', odd: 3.2, active: true }, { label: 'W2', odd: 2.4, active: true }] },
+            { id: 3, name: 'Rangers - Fener', outcomes: [{ label: 'W1', odd: 2.85, active: false }, { label: 'X', odd: 3.75, active: true }, { label: 'W2', odd: 2.3, active: true }] },
+            { id: 4, name: 'Man Un - Sociedad', outcomes: [{ label: 'W1', odd: 2.0, active: true }, { label: 'X', odd: 3.3, active: true }, { label: 'W2', odd: 3.95, active: false }] },
+            { id: 5, name: 'Матч 5', outcomes: [{ label: 'W1', odd: 2.5, active: true }, { label: 'X', odd: 3.0, active: true }, { label: 'W2', odd: 2.8, active: false }] },
+            { id: 6, name: 'Матч 6', outcomes: [{ label: 'W1', odd: 1.8, active: true }, { label: 'X', odd: 3.5, active: true }, { label: 'W2', odd: 4.5, active: false }] }
+          ]);
+
+          // --- СОСТОЯНИЯ: ТОТАЛЫ ---
+          const [totalsStrategy, setTotalsStrategy] = useState('smart'); 
+          const [customTotalsCount, setCustomTotalsCount] = useState(4);
+          const [placedBetsTotals, setPlacedBetsTotals] = useState(new Set());
+          const [totalsModes, setTotalsModes] = useState({});
+          const [totalsMatches, setTotalsMatches] = useState(Array.from({ length: 10 }, (_, i) => ({ id: i + 1, name: `Матч ${i+1}`, outcomes: [{ label: 'ТБ 2.5', odd: 1.80, active: true }, { label: 'ТМ 2.5', odd: 1.95, active: true }] })));
+
+          // --- СОСТОЯНИЯ: ОЗ ---
+          const [bttsStrategy, setBttsStrategy] = useState('shootout'); 
+          const [customBttsCount, setCustomBttsCount] = useState(4);
+          const [placedBetsBtts, setPlacedBetsBtts] = useState(new Set());
+          const [bttsModes, setBttsModes] = useState({});
+          const [bttsMatches, setBttsMatches] = useState(Array.from({ length: 10 }, (_, i) => ({ id: i + 1, name: `Матч ОЗ ${i+1}`, outcomes: [{ label: 'Да', odd: 1.70, active: true }, { label: 'Нет', odd: 2.10, active: true }] })));
+
+          // --- СОСТОЯНИЯ: СИСТЕМЫ (ВЕЕР) ---
+          const [systemStrategy, setSystemStrategy] = useState('matrix'); 
+          const [systemMatrixType, setSystemMatrixType] = useState('3/6'); 
+          const [systemBritishType, setSystemBritishType] = useState('Yankee'); 
+          const [placedBetsSystems, setPlacedBetsSystems] = useState(new Set());
+          const [systemsModes, setSystemsModes] = useState({});
+          const [systemsMatches, setSystemsMatches] = useState(Array.from({ length: 6 }, (_, i) => ({ id: i + 1, name: `Событие ${i+1}`, label: 'Ничья', odd: 3.20 })));
+
+          // --- СОСТОЯНИЯ: ИНД. ТОТАЛ ---
+          const [itStrategy, setItStrategy] = useState('synth_itb'); 
+          const [itHtFtSystemType, setItHtFtSystemType] = useState('2/3'); 
+          const [placedBetsIt, setPlacedBetsIt] = useState(new Set());
+          const [itModes, setItModes] = useState({});
+          const [itSynthMatches, setItSynthMatches] = useState([{ id: 1, name: 'Команда W', outcomes: [{ label: 'Ровно 2 гола', odd: 3.50, active: true }, { label: 'Ровно 3 гола', odd: 6.00, active: true }, { label: '4+ голов', odd: 10.00, active: true }] }]);
+          const [itSafeMatches, setItSafeMatches] = useState([{ id: 1, name: 'Андердог - Фаворит', outcomes: [{ label: 'ИТБ1 (0.5)', odd: 1.70, active: true }, { label: 'Счет 0:0', odd: 12.00, active: true }] }]);
+          const [itHtFtMatches, setItHtFtMatches] = useState([{ id: 1, name: 'Ман Сити', label: 'Гол в обоих таймах', odd: 2.10 }, { id: 2, name: 'Бавария', label: 'Гол в обоих таймах', odd: 2.20 }, { id: 3, name: 'Реал Мадрид', label: 'Гол в обоих таймах', odd: 2.30 }, { id: 4, name: 'ПСЖ', label: 'Гол в обоих таймах', odd: 2.15 }]);
+
+          // --- СОСТОЯНИЯ: КАСКАД (МАТРЁШКА) ---
+          const [cascadeTotalMatchesInput, setCascadeTotalMatchesInput] = useState(15);
+          const [cascadeStepInput, setCascadeStepInput] = useState(3);
+          const [cascadeMatches, setCascadeMatches] = useState([]);
+          const [cascadeExpresses, setCascadeExpresses] = useState([]);
+          const [placedBetsCascade, setPlacedBetsCascade] = useState(new Set());
+
+          // --- СОСТОЯНИЯ: УМНЫЙ ДОГОН ---
+          const [chaserTarget, setChaserTarget] = useState(50);
+          const [chaserSteps, setChaserSteps] = useState([]);
+          const [chaserInputOdd, setChaserInputOdd] = useState(3.50);
+
+          // --- СОСТОЯНИЯ: МОИ СТРАТЕГИИ ---
+          const [customStrategies, setCustomStrategies] = useState(() => JSON.parse(localStorage.getItem('dutchingCustomStrats')) || []);
+          const [activeStrategyId, setActiveStrategyId] = useState(null);
+          const [showStratModal, setShowStratModal] = useState(false);
+          const [editStratId, setEditStratId] = useState(null);
+          const [stratForm, setStratForm] = useState({ name: '', description: '', startBank: '' });
+          const [newBetForm, setNewBetForm] = useState({ match: '', stake: '', odd: '' });
+
+          // Сохранение в LocalStorage
+          useEffect(() => { localStorage.setItem('dutchingMainBank', mainBank); }, [mainBank]);
+          useEffect(() => { localStorage.setItem('dutchingHistoryData', JSON.stringify(historyData)); }, [historyData]);
+          useEffect(() => { localStorage.setItem('dutchingCustomStrats', JSON.stringify(customStrategies)); }, [customStrategies]);
+
+          // --- ИНИЦИАЛИЗАЦИЯ КАСКАДА ---
+          const generateCascade = () => {
+              const count = parseInt(cascadeTotalMatchesInput) || 15;
+              const step = parseInt(cascadeStepInput) || 3;
+              const newMatches = Array.from({ length: count }, (_, i) => ({ id: i + 1, name: `Матч ${i + 1}`, odd: (1.30 + Math.random() * 0.4).toFixed(2), status: 'PENDING' }));
+              setCascadeMatches(newMatches);
+              const newExpresses = [];
+              let expId = 1;
+              for (let i = count; i >= 1; i -= step) {
+                  newExpresses.push({ id: expId, name: `Экспресс ${expId} (${i} м)`, included: Array.from({length: i}, (_, j) => j + 1) });
+                  expId++;
+              }
+              setCascadeExpresses(newExpresses);
+              setPlacedBetsCascade(new Set());
+          };
+
+          useEffect(() => { generateCascade(); }, []);
+
+          // --- РАСЧЕТ РЕЗУЛЬТАТОВ КАСКАДА ---
+          const cascadeResults = useMemo(() => {
+              const totalBank = parseFloat(bank);
+              const minBet = parseFloat(minimumBet) || 0;
+              if (isNaN(totalBank) || totalBank <= 0) return null;
+
+              const calculatedExpresses = cascadeExpresses.map(exp => {
+                  const parts = exp.included.map(matchId => cascadeMatches.find(m => m.id === matchId)).filter(Boolean);
+                  const totalOdd = parts.reduce((acc, match) => acc * (parseFloat(match.odd) || 1), 1);
+                  return { ...exp, parts, totalOdd, prob: 1 / totalOdd };
+              }).filter(exp => exp.parts.length > 0); 
+
+              if (calculatedExpresses.length === 0) return null;
+
+              const sumProbs = calculatedExpresses.reduce((sum, exp) => sum + exp.prob, 0);
+              const targetPayout = totalBank / sumProbs;
+
+              let actualBank = 0;
+              const finalExpresses = calculatedExpresses.map(exp => {
+                  const stake = Math.max(Math.round((targetPayout / exp.totalOdd) * 100) / 100, minBet);
+                  actualBank += stake;
+                  
+                  let expStatus = 'WON';
+                  for (const match of exp.parts) {
+                      if (match.status === 'LOST') { expStatus = 'LOST'; break; }
+                      if (match.status === 'PENDING') expStatus = 'PENDING';
+                  }
+                  return { ...exp, stake, payout: stake * exp.totalOdd, status: expStatus };
+              });
+
+              const totalWonPayout = finalExpresses.reduce((sum, exp) => sum + (exp.status === 'WON' ? exp.payout : 0), 0);
+              const potentialPayout = finalExpresses.reduce((sum, exp) => sum + ((exp.status === 'WON' || exp.status === 'PENDING') ? exp.payout : 0), 0);
+              const netProfit = totalWonPayout - actualBank;
+
+              return {
+                  expresses: finalExpresses, targetPayout, actualBank, totalWonPayout, potentialPayout, netProfit,
+                  allLost: finalExpresses.every(e => e.status === 'LOST'),
+                  allPending: finalExpresses.every(e => e.status === 'PENDING'),
+                  strategyName: 'Каскад (Матрёшка)'
+              };
+          }, [cascadeMatches, cascadeExpresses, bank, minimumBet]);
+
+
+          // --- ЛОГИКА ДОГОНА ---
+          const startChaser = () => {
+              if(parseFloat(chaserTarget) <= 0) return;
+              setChaserSteps([{ id: Date.now(), stake: parseFloat(chaserTarget) / (parseFloat(chaserInputOdd) - 1), odd: parseFloat(chaserInputOdd), result: 'PENDING' }]);
+          };
+          const handleChaserResult = (index, result) => {
+              const newSteps = [...chaserSteps]; newSteps[index].result = result;
+              if (result === 'LOST') {
+                  const totalLosses = newSteps.filter(s => s.result === 'LOST').reduce((sum, s) => sum + s.stake, 0);
+                  const nextStake = (parseFloat(chaserTarget) + totalLosses) / (parseFloat(chaserInputOdd) - 1);
+                  newSteps.push({ id: Date.now(), stake: nextStake, odd: parseFloat(chaserInputOdd), result: 'PENDING' });
+                  setMainBank((parseFloat(mainBank) - newSteps[index].stake).toFixed(2));
+              } else if (result === 'WON') {
+                  const winAmount = newSteps[index].stake * newSteps[index].odd;
+                  const totalInvested = newSteps.reduce((sum, s) => sum + s.stake, 0);
+                  const netProfit = winAmount - totalInvested;
+                  setMainBank((parseFloat(mainBank) + (winAmount - newSteps[index].stake)).toFixed(2));
+                  newSteps.push({ id: Date.now(), isDone: true, netProfit });
+              }
+              setChaserSteps(newSteps);
+          };
+
+          // --- ЛОГИКА ВКЛАДОК ДАТЧИНГА ---
+          const getActiveMatches = () => {
+              if (activeTab === 'classic') return classicMatches.slice(0, classicCount);
+              if (activeTab === 'totals') return totalsMatches.slice(0, totalsStrategy === 'smart' ? 4 : totalsStrategy === 'anti' ? 3 : totalsStrategy === 'banker' ? 5 : totalsStrategy === 'teasers' ? 4 : customTotalsCount);
+              if (activeTab === 'btts') return bttsMatches.slice(0, bttsStrategy === 'shootout' ? 4 : bttsStrategy === 'zero' ? 3 : customBttsCount);
+              if (activeTab === 'systems') {
+                  if (systemStrategy === 'matrix') return (systemMatrixType === '2/4' || systemMatrixType === '3/4') ? systemsMatches.slice(0, 4) : systemsMatches.slice(0, 6);
+                  if (systemStrategy === 'anchors') return systemsMatches.slice(0, 6);
+                  if (systemStrategy === 'fullcover' || systemStrategy === 'anti_express') return systemsMatches.slice(0, 5);
+                  if (systemStrategy === 'british') return systemsMatches.slice(0, systemBritishType === 'Yankee' ? 4 : systemBritishType === 'Canadian' ? 5 : 6);
+              }
+              if (activeTab === 'it') {
+                  if (itStrategy === 'synth_itb') return itSynthMatches;
+                  if (itStrategy === 'safe_underdog') return itSafeMatches;
+                  if (itStrategy === 'ht_ft_goals') {
+                      const totalM = parseInt(itHtFtSystemType.split('/')[1]);
+                      return itHtFtMatches.slice(0, totalM);
+                  }
+              }
+              return [];
+          };
+
+          const handlePresetSwitch = (tab, preset) => {
+              if (tab === 'totals') {
+                  setTotalsStrategy(preset); setPlacedBetsTotals(new Set()); setTotalsModes({});
+                  setTotalsMatches(prev => prev.map((m, i) => {
+                      if (preset === 'teasers') return { ...m, outcomes: [{ label: 'ТБ 1.5', odd: 1.30, active: true }, { label: 'ТМ 1.5', odd: 3.20, active: true }] };
+                      return { ...m, outcomes: [ { ...m.outcomes[0], label: 'ТБ 2.5', active: true }, { ...m.outcomes[1], label: 'ТМ 2.5', active: preset === 'banker' && i < 2 ? false : true } ] };
+                  }));
+              }
+              if (tab === 'btts') {
+                  setBttsStrategy(preset); setPlacedBetsBtts(new Set()); setBttsModes({});
+                  setBttsMatches(prev => prev.map((m, i) => ({ ...m, outcomes: [ { ...m.outcomes[0], active: true }, { ...m.outcomes[1], active: true } ] })));
+              }
+              if (tab === 'systems') {
+                  setSystemStrategy(preset); setPlacedBetsSystems(new Set()); setSystemsModes({});
+                  if (preset === 'anti_express') {
+                      setSystemsMatches(prev => prev.map(m => ({...m, outcomes: [{label: 'Фаворит', odd: 1.40, active: true}, {label: 'Осечка', odd: 2.80, active: true}]})));
+                  } else if (preset === 'british') {
+                      setSystemsMatches(prev => prev.map(m => ({...m, outcomes: [{label: 'Победа', odd: 1.90, active: true}]})));
+                  }
+              }
+              if (tab === 'it') {
+                  setItStrategy(preset); setPlacedBetsIt(new Set()); setItModes({});
+              }
+          };
+
+          // --- РАСЧЕТ РЕЗУЛЬТАТОВ (Обычный Датчинг и Системы) ---
+          const getResults = () => {
+            if (activeTab === 'strategies' || activeTab === 'cascade' || activeTab === 'chaser' || activeTab === 'ultra') return null;
+            const totalBank = parseFloat(bank); const minBet = parseFloat(minimumBet) || 0;
+            if (totalBank <= 0) return { expresses: [], summary: null };
+
+            const currentMatches = getActiveMatches();
+            let expressesRaw = [];
+            const currentModesState = activeTab === 'classic' ? classicModes : activeTab === 'totals' ? totalsModes : activeTab === 'btts' ? bttsModes : activeTab === 'it' ? itModes : systemsModes;
+
+            if (activeTab === 'systems' || (activeTab === 'it' && itStrategy === 'ht_ft_goals')) {
+                if (systemStrategy === 'anti_express' || systemStrategy === 'british') {
+                    const activePaths = currentMatches.map((m, mIdx) => m.outcomes.map((o, oIdx) => ({ ...o, matchName: m.name, matchIdx: mIdx, outcomeIdx: oIdx })).filter(o => o.active));
+                    if (activePaths.some(p => p.length === 0)) return { expresses: [], summary: null, error: "Выберите хотя бы один исход." };
+                    let combos = [[]];
+                    for (const path of activePaths) { const newCombos = []; for (const combo of combos) { for (const outcome of path) newCombos.push([...combo, outcome]); } combos = newCombos; }
+
+                    if (systemStrategy === 'anti_express') {
+                        expressesRaw = combos.map((parts, index) => {
+                            const totalOdd = parts.reduce((acc, part) => acc * parseFloat(part.odd || 1), 1);
+                            const hash = parts.map(p => `${p.matchIdx}-${p.outcomeIdx}`).join('|');
+                            let defaultMode = parts.every(p => p.label === 'Фаворит') ? 'SKIP' : 'MAIN';
+                            return { id: index + 1, hash, parts, totalOdd, mode: currentModesState[hash] || defaultMode };
+                        });
+                    } else if (systemStrategy === 'british') {
+                        const activeOutcomes = currentMatches.map((m, i) => {
+                            const active = m.outcomes.find(o => o.active);
+                            return active ? { matchName: m.name, label: active.label, odd: parseFloat(active.odd), matchIdx: i } : null;
+                        }).filter(o => o !== null);
+                        
+                        let bCombos = [];
+                        for (let k = 2; k <= activeOutcomes.length; k++) { bCombos.push(...getCombinations(activeOutcomes, k)); }
+                        expressesRaw = bCombos.map((parts, index) => {
+                            const totalOdd = parts.reduce((acc, part) => acc * part.odd, 1);
+                            const hash = parts.map(p => p.matchIdx).join('|');
+                            return { id: index + 1, hash, parts, totalOdd, mode: currentModesState[hash] || 'MAIN' };
+                        });
+                    }
+                } else {
+                    if (currentMatches.some(m => !m.odd || parseFloat(m.odd) <= 0)) return { expresses: [], summary: null, error: "Укажите корректные коэффициенты для всех матчей." };
+                    const mMapped = currentMatches.map((m, i) => ({ matchName: m.name, label: m.label, odd: parseFloat(m.odd), matchIdx: i }));
+                    let combos = [];
+                    if (activeTab === 'it' && itStrategy === 'ht_ft_goals') {
+                        const k = parseInt(itHtFtSystemType.split('/')[0]);
+                        combos = getCombinations(mMapped, k);
+                    } else if (systemStrategy === 'matrix') {
+                        const k = systemMatrixType === '2/4' ? 2 : systemMatrixType === '3/4' ? 3 : 3;
+                        combos = getCombinations(mMapped, k);
+                    } else if (systemStrategy === 'anchors') {
+                        const anchors = mMapped.slice(0, 2); const bombs = mMapped.slice(2, 6);
+                        const bombCombos = getCombinations(bombs, 2);
+                        combos = bombCombos.map(bc => [...anchors, ...bc]);
+                    } else if (systemStrategy === 'fullcover') {
+                        combos = [...getCombinations(mMapped, 5), ...getCombinations(mMapped, 4), ...getCombinations(mMapped, 3)];
+                    }
+                    expressesRaw = combos.map((parts, index) => {
+                        const totalOdd = parts.reduce((acc, part) => acc * part.odd, 1);
+                        const hash = parts.map(p => p.matchIdx).join('|');
+                        let defaultMode = 'MAIN';
+                        if (systemStrategy === 'fullcover' && activeTab === 'systems') { defaultMode = parts.length === 3 ? 'INSURE' : 'MAIN'; }
+                        return { id: index + 1, hash, parts, totalOdd, mode: currentModesState[hash] || defaultMode };
+                    });
+                }
+            } else {
+                const activePaths = currentMatches.map((m, mIdx) => m.outcomes.map((o, oIdx) => ({ ...o, matchName: m.name, matchIdx: mIdx, outcomeIdx: oIdx })).filter(o => o.active));
+                if (activePaths.some(p => p.length === 0)) return { expresses: [], summary: null, error: "Выберите хотя бы один исход в каждом матче." };
+                let combos = [[]];
+                for (const path of activePaths) { const newCombos = []; for (const combo of combos) { for (const outcome of path) newCombos.push([...combo, outcome]); } combos = newCombos; }
+                expressesRaw = combos.map((parts, index) => {
+                  const totalOdd = parts.reduce((acc, part) => acc * parseFloat(part.odd || 1), 1);
+                  const hash = parts.map(p => `${p.matchIdx}-${p.outcomeIdx}`).join('|');
+                  let defaultMode = 'MAIN';
+                  if (!currentModesState[hash]) {
+                      if (activeTab === 'totals') {
+                          const tmCount = parts.filter(p => p.label.includes('ТМ')).length;
+                          if (totalsStrategy === 'smart') defaultMode = tmCount === 0 ? 'MAIN' : tmCount === 1 ? 'INSURE' : 'SKIP';
+                          else if (totalsStrategy === 'anti') defaultMode = tmCount === 0 ? 'SKIP' : 'MAIN';
+                          else if (totalsStrategy === 'teasers') defaultMode = 'MAIN';
+                      } else if (activeTab === 'btts') {
+                          const noCount = parts.filter(p => p.label === 'Нет').length;
+                          if (bttsStrategy === 'shootout') defaultMode = noCount === 0 ? 'MAIN' : noCount === 1 ? 'INSURE' : 'SKIP';
+                          else if (bttsStrategy === 'zero') defaultMode = noCount === 0 ? 'SKIP' : 'MAIN';
+                      } else if (activeTab === 'it' && itStrategy === 'safe_underdog') {
+                          const has00 = parts.some(p => p.label === 'Счет 0:0');
+                          defaultMode = has00 ? 'INSURE' : 'MAIN';
+                      }
+                  }
+                  return { id: index + 1, hash, parts, totalOdd, mode: currentModesState[hash] || defaultMode };
+                });
+            }
+
+            let actualBank = 0; let mainTotalPayouts = 0; let mainCount = 0; let expresses = [];
+            let insureCostExact = 0; let mainProbSum = 0;
+
+            if (activeTab === 'systems' && systemStrategy === 'british') {
+                const activeBets = expressesRaw.filter(exp => exp.mode !== 'SKIP');
+                const stakePerBet = totalBank / activeBets.length;
+                expresses = expressesRaw.map(exp => {
+                    let betAmount = exp.mode !== 'SKIP' ? Math.max(Math.round(stakePerBet * 100)/100, minBet) : 0;
+                    actualBank += betAmount;
+                    if (betAmount > 0) { mainTotalPayouts += betAmount * exp.totalOdd; mainCount++; }
+                    return { ...exp, betAmount, payout: betAmount * exp.totalOdd };
+                });
+            } else {
+                expressesRaw.forEach(exp => {
+                    if (exp.mode === 'INSURE') { let actualBet = Math.max(Math.ceil((totalBank / exp.totalOdd) * 20) / 20, minBet); exp.betAmount = actualBet; insureCostExact += actualBet; } 
+                    else if (exp.mode === 'MAIN') mainProbSum += 1 / exp.totalOdd;
+                });
+                const isBankrupt = insureCostExact >= totalBank && mainProbSum > 0;
+                const availableMainBank = Math.max(0, totalBank - insureCostExact);
+                const targetMainPayout = mainProbSum > 0 ? availableMainBank / mainProbSum : 0;
+
+                expresses = expressesRaw.map(exp => {
+                    let betAmount = 0;
+                    if (exp.mode === 'INSURE') betAmount = exp.betAmount; 
+                    else if (exp.mode === 'MAIN') betAmount = Math.max(Math.round((targetMainPayout / exp.totalOdd) * 20) / 20, minBet);
+                    actualBank += betAmount;
+                    if (exp.mode === 'MAIN' && betAmount > 0) { mainTotalPayouts += betAmount * exp.totalOdd; mainCount++; }
+                    return { ...exp, betAmount, payout: betAmount * exp.totalOdd };
+                });
+                if (isBankrupt) return { expresses, summary: { actualBank, avgMainPayout: 0, netProfit: 0, roi: 0, isBankrupt: true, strategyName: '' } };
+            }
+
+            const avgMainPayout = mainCount > 0 ? mainTotalPayouts / mainCount : 0;
+            const netProfit = avgMainPayout > 0 ? avgMainPayout - actualBank : 0;
+            let stratName = activeTab === 'classic' ? `Классика (${classicCount})` : activeTab === 'totals' ? `Тоталы (${totalsStrategy})` : activeTab === 'btts' ? `ОЗ (${bttsStrategy})` : '';
+            if (activeTab === 'systems') stratName = `Система (${systemStrategy === 'matrix' ? systemMatrixType : systemStrategy === 'anchors' ? 'Якоря' : systemStrategy === 'british' ? systemBritishType : systemStrategy === 'anti_express' ? 'Анти-Экспресс' : 'Веер'})`;
+            if (activeTab === 'it') stratName = `Инд. Тотал (${itStrategy === 'synth_itb' ? 'Синтетика' : itStrategy === 'safe_underdog' ? 'Безопасный' : itHtFtSystemType})`;
+
+            return { expresses, summary: { actualBank, avgMainPayout, netProfit, roi: actualBank > 0 ? (netProfit / actualBank) * 100 : 0, isBankrupt: false, strategyName: stratName } };
+          };
+
+          const results = useMemo(getResults, [classicMatches, totalsMatches, bttsMatches, systemsMatches, itSynthMatches, itSafeMatches, itHtFtMatches, classicCount, totalsStrategy, bttsStrategy, systemStrategy, systemMatrixType, systemBritishType, itStrategy, itHtFtSystemType, customTotalsCount, customBttsCount, bank, minimumBet, classicModes, totalsModes, bttsModes, systemsModes, itModes, activeTab]);
+
+          // --- СОХРАНЕНИЕ В ГЛОБАЛЬНУЮ ИСТОРИЮ ---
+          const saveToHistory = () => {
+            if (activeTab === 'cascade') {
+                if (!cascadeResults) return;
+                setHistoryData([{ id: Date.now(), date: new Date().toLocaleString('ru-RU', {day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'}), strategy: cascadeResults.strategyName, matches: cascadeMatches.map(m => m.name).join(', '), gameBank: cascadeResults.actualBank, netProfit: cascadeResults.netProfit, status: 'PENDING' }, ...historyData]);
+                return;
+            }
+            if (!results || !results.summary) return;
+            setHistoryData([{ id: Date.now(), date: new Date().toLocaleString('ru-RU', {day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'}), strategy: results.summary.strategyName, matches: getActiveMatches().map(m => m.name).join(' | '), gameBank: results.summary.actualBank, netProfit: results.summary.netProfit, status: 'PENDING' }, ...historyData]);
+          };
+
+          const resolveHistoryItem = (id, outcome) => {
+            setHistoryData(historyData.map(item => {
+                if (item.id === id && item.status === 'PENDING') {
+                    let newMainBank = parseFloat(mainBank);
+                    if (outcome === 'WON_MAIN') newMainBank += item.netProfit; else if (outcome === 'LOST') newMainBank -= item.gameBank;
+                    setMainBank(newMainBank.toFixed(2)); return { ...item, status: outcome };
+                } return item;
+            }));
+          };
+
+          const globalStats = useMemo(() => {
+            let totalProfit = 0, resolvedCount = 0;
+            historyData.forEach(item => { if (item.status === 'WON_MAIN') { totalProfit += item.netProfit; resolvedCount++; } if (item.status === 'LOST') { totalProfit -= item.gameBank; resolvedCount++; } if (item.status === 'WON_INSURE') { resolvedCount++; } });
+            return { totalProfit, resolvedCount, total: historyData.length };
+          }, [historyData]);
+
+          // --- МОИ СТРАТЕГИИ ---
+          const openStratModal = (strat = null) => {
+              if (strat) { setEditStratId(strat.id); setStratForm({ name: strat.name, description: strat.description, startBank: strat.startBank }); } 
+              else { setEditStratId(null); setStratForm({ name: '', description: '', startBank: '100' }); }
+              setShowStratModal(true);
+          };
+          const saveStrategy = () => {
+              if (!stratForm.name || !stratForm.startBank) return;
+              if (editStratId) setCustomStrategies(customStrategies.map(s => s.id === editStratId ? { ...s, name: stratForm.name, description: stratForm.description, startBank: parseFloat(stratForm.startBank) } : s));
+              else setCustomStrategies([{ id: Date.now(), name: stratForm.name, description: stratForm.description, startBank: parseFloat(stratForm.startBank), bets: [] }, ...customStrategies]);
+              setShowStratModal(false);
+          };
+          const deleteStrategy = (id) => {
+              if (window.confirm('Вы уверены, что хотите удалить эту стратегию?')) { setCustomStrategies(customStrategies.filter(s => s.id !== id)); if (activeStrategyId === id) setActiveStrategyId(null); }
+          };
+          const addCustomBet = () => {
+              if (!newBetForm.match || !newBetForm.stake || !newBetForm.odd) return;
+              setCustomStrategies(customStrategies.map(s => {
+                  if (s.id === activeStrategyId) return { ...s, bets: [{ id: Date.now(), date: new Date().toLocaleString('ru-RU', {day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'}), match: newBetForm.match, stake: parseFloat(newBetForm.stake), odd: parseFloat(newBetForm.odd), status: 'PENDING' }, ...s.bets] };
+                  return s;
+              }));
+              setNewBetForm({ match: '', stake: '', odd: '' });
+          };
+          const resolveCustomBet = (stratId, betId, status) => {
+              setCustomStrategies(customStrategies.map(s => { if (s.id === stratId) return { ...s, bets: s.bets.map(b => b.id === betId ? { ...b, status } : b) }; return s; }));
+          };
+          const deleteCustomBet = (stratId, betId) => {
+              if(window.confirm('Удалить ставку из истории?')) setCustomStrategies(customStrategies.map(s => { if (s.id === stratId) return { ...s, bets: s.bets.filter(b => b.id !== betId) }; return s; }));
+          }
+          const getStrategyStats = (strat) => {
+              let currentBank = strat.startBank; let inPlay = 0; let won = 0, lost = 0, totalResolved = 0;
+              strat.bets.forEach(b => {
+                  currentBank -= b.stake;
+                  if (b.status === 'PENDING') inPlay += b.stake;
+                  else if (b.status === 'WON') { currentBank += (b.stake * b.odd); won++; totalResolved++; } 
+                  else if (b.status === 'LOST') { lost++; totalResolved++; } 
+                  else if (b.status === 'RETURN') { currentBank += b.stake; totalResolved++; }
+              });
+              const netProfit = (currentBank + inPlay) - strat.startBank;
+              return { currentBank, inPlay, netProfit, roi: strat.startBank > 0 ? (netProfit / strat.startBank) * 100 : 0, winrate: totalResolved > 0 ? (won / (won + lost)) * 100 : 0, totalBets: strat.bets.length };
+          };
+
+          // --- РЕНДЕРЕРЫ ---
+          const handleCascadeMatchChange = (id, field, value) => {
+              setCascadeMatches(cascadeMatches.map(m => m.id === id ? { ...m, [field]: value } : m));
+          };
+          const toggleMatchInCascadeExpress = (expressId, matchId) => {
+              setCascadeExpresses(cascadeExpresses.map(exp => {
+                  if (exp.id === expressId) {
+                      const newIncluded = exp.included.includes(matchId) 
+                          ? exp.included.filter(id => id !== matchId)
+                          : [...exp.included, matchId].sort((a, b) => a - b);
+                      return { ...exp, included: newIncluded };
+                  }
+                  return exp;
+              }));
+          };
+          const addCascadeExpress = () => {
+              const newId = cascadeExpresses.length > 0 ? Math.max(...cascadeExpresses.map(e => e.id)) + 1 : 1;
+              setCascadeExpresses([...cascadeExpresses, { id: newId, name: `Свой Экспресс ${newId}`, included: [] }]);
+          };
+          const removeCascadeExpress = (id) => {
+              setCascadeExpresses(cascadeExpresses.filter(e => e.id !== id));
+          };
+
+          const renderTabs = () => (
+              <div className="flex justify-center mb-6 overflow-x-auto pb-2">
+                  <div className="bg-slate-900/80 p-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-md flex gap-2 shadow-2xl min-w-max">
+                      <button onClick={() => setActiveTab('classic')} className={`px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${activeTab === 'classic' ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                          <Layers size={18} className={activeTab === 'classic' ? "text-emerald-100" : ""} /> Классика
+                      </button>
+                      <button onClick={() => setActiveTab('systems')} className={`px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${activeTab === 'systems' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                          <Network size={18} className={activeTab === 'systems' ? "text-indigo-100" : ""} /> Системы (Веер)
+                      </button>
+                      <button onClick={() => setActiveTab('cascade')} className={`px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${activeTab === 'cascade' ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                          <Combine size={18} className={activeTab === 'cascade' ? "text-rose-100" : ""} /> Каскад
+                      </button>
+                      <button onClick={() => setActiveTab('totals')} className={`px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${activeTab === 'totals' ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                          <Activity size={18} className={activeTab === 'totals' ? "text-blue-100" : ""} /> Тоталы
+                      </button>
+                      <button onClick={() => setActiveTab('btts')} className={`px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${activeTab === 'btts' ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                          <Target size={18} className={activeTab === 'btts' ? "text-amber-100" : ""} /> ОЗ
+                      </button>
+                      <button onClick={() => setActiveTab('it')} className={`px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${activeTab === 'it' ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                          <User size={18} className={activeTab === 'it' ? "text-orange-100" : ""} /> Инд. Тотал
+                      </button>
+                      <button onClick={() => setActiveTab('chaser')} className={`px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${activeTab === 'chaser' ? 'bg-gradient-to-r from-red-600 to-pink-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                          <TrendingUp size={18} className={activeTab === 'chaser' ? "text-red-100" : ""} /> Догон
+                      </button>
+                      <button onClick={() => setActiveTab('ultra')} className={`px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${activeTab === 'ultra' ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                          <Zap size={18} className={activeTab === 'ultra' ? "text-violet-100" : ""} /> Ультра
+                      </button>
+                      <button onClick={() => setActiveTab('strategies')} className={`px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${activeTab === 'strategies' ? 'bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+                          <BookOpen size={18} className={activeTab === 'strategies' ? "text-fuchsia-100" : ""} /> Мои Стратегии
+                      </button>
+                  </div>
+              </div>
+          );
+
+          const renderUltraAggressionTab = () => {
+              const Block = ({ n, title, children }) => (
+                  <article className="bg-slate-900/80 border border-violet-500/25 rounded-2xl p-5 md:p-6 shadow-xl backdrop-blur-md">
+                      <div className="flex items-start gap-3 mb-4">
+                          <span className="shrink-0 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-violet-600/35 text-violet-100 border border-violet-400/30">{n}</span>
+                          <h2 className="text-base md:text-lg font-bold text-white leading-snug">{title}</h2>
+                      </div>
+                      <div className="text-slate-300 text-sm leading-relaxed space-y-4">{children}</div>
+                  </article>
+              );
+              return (
+                  <div className="max-w-4xl mx-auto space-y-6 pb-10">
+                      <div className="bg-violet-950/45 border border-violet-500/40 rounded-2xl p-5 md:p-6 shadow-inner">
+                          <div className="flex items-center gap-3 mb-4">
+                              <Zap className="text-violet-300 shrink-0" size={32} />
+                              <div>
+                                  <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">Ультра-Агрессия: разгон банка на «верняках»</h2>
+                                  <p className="text-violet-200/90 text-xs font-bold uppercase tracking-wider mt-1">Коэффициенты ≤ 1.50</p>
+                              </div>
+                          </div>
+                          <p className="text-slate-300 text-sm leading-relaxed">
+                              Чтобы получить огромную выплату (сотни «иксов») из маленьких коэффициентов вроде 1.35 или 1.45, нельзя просто собрать экспресс из 20 событий — один случайный гол или ничья уничтожит всё.
+                              Нужны агрессивные математические модели, которые разгоняют прибыль по экспоненте, но имеют встроенную гибкость или «право на ошибку».
+                          </p>
+                          <p className="text-violet-200/80 text-xs font-semibold uppercase tracking-wider mt-4">Четыре концепции для внедрения в терминал</p>
+                      </div>
+
+                      <Block n="1" title="«Фрактальный мульти-экспресс» (блочная система)">
+                          <p>Для тех, кто любит собирать по 15–20 «железобетонных» событий (П1 фаворитов, ТБ 1.5, фора +1.5) с кэфами 1.20–1.40.</p>
+                          <div className="bg-slate-950/55 rounded-xl p-4 border border-slate-700/60">
+                              <p className="text-violet-300 font-bold text-[10px] uppercase tracking-wider mb-2">Механика для терминала</p>
+                              <p>
+                                  Загружаете 15 матчей с кэфом ~1.35. Терминал не собирает один длинный экспресс, а делит их на 5 независимых блоков по 3 матча.
+                                  Коэффициент блока ≈ 1.35 × 1.35 × 1.35 ≈ <strong className="text-white">2.46</strong>.
+                                  Сами отмечаете галочками, какие блоки входят в какие экспрессы (матрица блоков). Ошибка в одном матче убивает только один блок.
+                              </p>
+                          </div>
+                          <div className="bg-emerald-950/25 rounded-xl p-4 border border-emerald-600/30">
+                              <p className="text-emerald-300 font-bold text-[10px] uppercase tracking-wider mb-2">В чём профит</p>
+                              <p>
+                                  Итоговый потенциальный коэффициент может быть очень большим (порядка 80–100). Если случится сенсация в одном из 15 матчей, сгорит только один блок;
+                                  остальные блоки и система в целом могут дать крупный плюс вместо полного слива купона.
+                              </p>
+                          </div>
+                      </Block>
+
+                      <Block n="2" title="Экспоненциальная «Гидра» (сплит-лесенка)">
+                          <p>Эволюция «снежного кома»: разгон банка all-in с ветвлением.</p>
+                          <div className="bg-slate-950/55 rounded-xl p-4 border border-slate-700/60">
+                              <p className="text-violet-300 font-bold text-[10px] uppercase tracking-wider mb-2">Механика для терминала</p>
+                              <p>
+                                  Старт с 10 $ на событие с кэфом 1.40 → выигрыш 14 $; следующий шаг — 14 $ на кэф 1.45 → 20.30 $.
+                                  <strong className="text-white"> Точка клонирования:</strong> когда банк утраивается (например, 30 $), терминал делает сплит — делит виртуальный банк на две ветки по 15 $.
+                                  Каждая ветка продолжает расти и снова делится при достижении цели.
+                              </p>
+                          </div>
+                          <div className="bg-emerald-950/25 rounded-xl p-4 border border-emerald-600/30">
+                              <p className="text-emerald-300 font-bold text-[10px] uppercase tracking-wider mb-2">В чём профит</p>
+                              <p>
+                                  Параллельно растут несколько «лесенок» на кэфы 1.30–1.50. Если одна ветка обрывается, остальные продолжают размножаться в геометрической прогрессии.
+                              </p>
+                          </div>
+                      </Block>
+
+                      <Block n="3" title="Матрица «Агрессивный бустер» (банкеры + навесы)">
+                          <p>Максимум из 2–3 ультра-надёжных матчей и нескольких матчей с кэфом ~1.40–1.50.</p>
+                          <div className="bg-slate-950/55 rounded-xl p-4 border border-slate-700/60">
+                              <p className="text-violet-300 font-bold text-[10px] uppercase tracking-wider mb-2">Механика для терминала</p>
+                              <p>
+                                  Вводите 2 банкера (например, ТБ 1.0 у Реала за ~1.15) и 6 агрессивных матчей с кэфами 1.40–1.50.
+                                  Терминал прикрепляет банкеров ко <strong className="text-white">всем</strong> тройкам из шести агрессивных матчей (20 пересекающихся экспрессов).
+                              </p>
+                          </div>
+                          <div className="bg-emerald-950/25 rounded-xl p-4 border border-emerald-600/30">
+                              <p className="text-emerald-300 font-bold text-[10px] uppercase tracking-wider mb-2">В чём профит</p>
+                              <p>
+                                  Коэффициент каждого экспресса порядка ~4.50. При заходе банкеров победа в агрессивном блоке запускает цепную реакцию — заходят сразу несколько экспрессов; при удачном сценарии ROI может быть очень высоким.
+                              </p>
+                          </div>
+                      </Block>
+
+                      <Block n="4" title="Разгон «Ступени сохранения» (Save-State Snowball)">
+                          <p>Режим в духе вкладки «Догон», но для наращивания плюса: all-in на исходы не выше ~1.50 с чекпоинтами.</p>
+                          <div className="bg-slate-950/55 rounded-xl p-4 border border-slate-700/60">
+                              <p className="text-violet-300 font-bold text-[10px] uppercase tracking-wider mb-2">Механика для терминала</p>
+                              <p>
+                                  Цель — пройти 10 шагов: шаг 1 — 10 $ × 1.40 = 14 $; шаг 2 — 14 $ × 1.50 = 21 $ и т.д.
+                                  На шаге 3 (например, сумма 31 $) терминал подсказывает: вывести 10 $ на счёт, дальше играть на чистую прибыль; на шаге 6 — отложить ещё 50 $ в несгораемый «сейф».
+                              </p>
+                          </div>
+                          <div className="bg-emerald-950/25 rounded-xl p-4 border border-emerald-600/30">
+                              <p className="text-emerald-300 font-bold text-[10px] uppercase tracking-wider mb-2">В чём профит</p>
+                              <p>
+                                  Десять шагов с кэфом ~1.40 дают большой совокупный множитель (порядка ~29), но при спотыкании на позднем шаге в сейфе уже лежит сумма, кратно превышающая первоначальный депозит.
+                              </p>
+                          </div>
+                      </Block>
+
+                      <p className="text-center text-slate-500 text-xs">Информационный макет · ставки связаны с риском</p>
+                  </div>
+              );
+          };
+
+          const renderCascadeTab = () => {
+              return (
+                  <div className="flex flex-col xl:flex-row gap-6">
+                      <div className="bg-rose-900/30 border border-rose-500/50 p-4 rounded-xl mb-4 text-rose-100 text-sm shadow-inner w-full xl:hidden">
+                          💡 <b>Каскадный Экспресс (Матрёшка):</b> Создайте длинный экспресс и страхуйте его более короткими 'обрезками'. Даже если длинный не зайдет, короткие окупят вложения! Задайте шаг удаления и отмечайте статусы матчей в Симуляторе.
+                      </div>
+                      {/* Левая панель: Настройки и Симулятор */}
+                      <div className="w-full xl:w-1/3 flex flex-col gap-4">
+                          <div className="bg-rose-900/30 border border-rose-500/50 p-4 rounded-xl hidden xl:block text-rose-100 text-sm shadow-inner w-full">
+                              💡 <b>Каскадный Экспресс (Матрёшка):</b> Создайте длинный экспресс и страхуйте его более короткими 'обрезками'. Даже если длинный не зайдет, короткие окупят вложения! Задайте шаг удаления и отмечайте статусы матчей в Симуляторе.
+                          </div>
+                          <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-4 shadow-xl backdrop-blur-md">
+                              <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-700">
+                                  <Settings className="text-rose-400" size={18}/> 
+                                  <h2 className="font-bold text-white uppercase text-sm">Генератор Каскада</h2>
+                              </div>
+                              <div className="flex gap-3 mb-3">
+                                  <div className="flex-1">
+                                      <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Матчей всего</label>
+                                      <input type="number" value={cascadeTotalMatchesInput} onChange={e=>setCascadeTotalMatchesInput(e.target.value)} className="w-full bg-slate-900 text-white p-2 rounded border border-slate-600 text-center text-sm font-bold focus:border-rose-500 outline-none"/>
+                                  </div>
+                                  <div className="flex-1">
+                                      <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Шаг удаления</label>
+                                      <input type="number" value={cascadeStepInput} onChange={e=>setCascadeStepInput(e.target.value)} className="w-full bg-slate-900 text-white p-2 rounded border border-slate-600 text-center text-sm font-bold focus:border-rose-500 outline-none"/>
+                                  </div>
+                              </div>
+                              <button onClick={generateCascade} className="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2 rounded-lg text-xs uppercase tracking-wider transition-colors shadow-lg shadow-rose-600/20">Сгенерировать</button>
+                          </div>
+
+                          {/* Симулятор */}
+                          <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-4 shadow-xl backdrop-blur-md flex-1 overflow-hidden flex flex-col">
+                              <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-700 shrink-0">
+                                  <h2 className="font-bold text-white uppercase text-sm flex items-center gap-2"><Zap className="text-amber-400" size={18}/> Симулятор</h2>
+                              </div>
+                              
+                              <div className="space-y-2 overflow-y-auto pr-2 pb-2 flex-1 max-h-[500px] custom-scrollbar">
+                                  {cascadeMatches.map((match, index) => (
+                                      <div key={match.id} className={`flex flex-col gap-2 p-2 rounded-lg border transition-all ${match.status === 'WON' ? 'bg-emerald-900/20 border-emerald-700/50' : match.status === 'LOST' ? 'bg-red-900/20 border-red-700/50 grayscale-[30%]' : 'bg-slate-800/80 border-slate-700'}`}>
+                                          <div className="flex items-center gap-2">
+                                              <div className="text-[10px] text-slate-500 font-mono w-4">{index + 1}.</div>
+                                              <input type="text" value={match.name} onChange={e => handleCascadeMatchChange(match.id, 'name', e.target.value)} className="flex-1 bg-transparent text-xs font-bold text-white outline-none border-b border-transparent focus:border-slate-600 truncate"/>
+                                              <input type="number" step="0.01" value={match.odd} onChange={e => handleCascadeMatchChange(match.id, 'odd', e.target.value)} className="w-14 bg-slate-900 text-slate-300 text-[11px] font-bold px-1 py-1 rounded border border-slate-700 outline-none focus:border-rose-500 text-center"/>
+                                          </div>
+                                          <div className="flex gap-1 justify-end">
+                                              <button onClick={() => handleCascadeMatchChange(match.id, 'status', 'WON')} className={`flex-1 py-1 rounded flex justify-center items-center transition-colors ${match.status === 'WON' ? 'bg-emerald-600 text-white shadow-inner' : 'bg-emerald-900/30 text-emerald-500/50 hover:bg-emerald-800/50'}`} title="Зашел"><CheckCircle size={14}/></button>
+                                              <button onClick={() => handleCascadeMatchChange(match.id, 'status', 'PENDING')} className={`flex-1 py-1 rounded flex justify-center items-center transition-colors ${match.status === 'PENDING' ? 'bg-slate-600 text-white shadow-inner' : 'bg-slate-800 text-slate-500/50 hover:bg-slate-700'}`} title="Ожидает"><Clock size={14}/></button>
+                                              <button onClick={() => handleCascadeMatchChange(match.id, 'status', 'LOST')} className={`flex-1 py-1 rounded flex justify-center items-center transition-colors ${match.status === 'LOST' ? 'bg-red-600 text-white shadow-inner' : 'bg-red-900/30 text-red-500/50 hover:bg-red-800/50'}`} title="Слив"><XCircle size={14}/></button>
+                                          </div>
+                                      </div>
+                                  ))}
+                              </div>
+                          </div>
+                      </div>
+
+                      {/* Правая панель: Матрица и Таблица */}
+                      <div className="w-full xl:w-2/3 flex flex-col gap-6">
+                          <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden flex flex-col backdrop-blur-md">
+                              <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/80">
+                                  <h2 className="font-bold text-white uppercase text-sm">Матрица Сборки</h2>
+                                  <button onClick={addCascadeExpress} className="flex items-center gap-1 bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all border border-slate-600"><Plus size={14}/> Добавить Свой</button>
+                              </div>
+                              <div className="overflow-x-auto p-4 flex-1">
+                                  <table className="w-full text-left border-collapse min-w-[500px]">
+                                      <thead>
+                                          <tr>
+                                              <th className="pb-3 px-1 text-[10px] uppercase tracking-wider text-slate-500 font-semibold w-8 text-center">№ Матча</th>
+                                              {cascadeExpresses.map((exp) => (
+                                                  <th key={exp.id} className="pb-3 px-2 text-center align-bottom group">
+                                                      <div className="flex flex-col items-center gap-2">
+                                                          <input type="text" value={exp.name} onChange={e => setCascadeExpresses(cascadeExpresses.map(ex => ex.id === exp.id ? {...ex, name: e.target.value} : ex))} className="bg-transparent text-[10px] uppercase font-bold text-slate-300 outline-none text-center w-full border-b border-transparent focus:border-rose-500"/>
+                                                          <button onClick={() => removeCascadeExpress(exp.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all"><Trash2 size={12}/></button>
+                                                      </div>
+                                                  </th>
+                                              ))}
+                                          </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-slate-700/30">
+                                          {cascadeMatches.map((match, mIdx) => (
+                                              <tr key={match.id} className="hover:bg-slate-800/50 transition-colors">
+                                                  <td className="py-1.5 px-1 text-[10px] text-slate-500 font-mono text-center">{mIdx + 1}</td>
+                                                  {cascadeExpresses.map(exp => {
+                                                      const isIncluded = exp.included.includes(match.id);
+                                                      return (
+                                                          <td key={exp.id} className="py-1.5 px-2 text-center">
+                                                              <button onClick={() => toggleMatchInCascadeExpress(exp.id, match.id)} className={`w-5 h-5 mx-auto rounded flex items-center justify-center transition-all ${isIncluded ? 'bg-rose-500 shadow-[0_0_8px_rgba(225,29,72,0.4)]' : 'bg-slate-800 border border-slate-600 hover:border-slate-400'}`}>
+                                                                  {isIncluded && <CheckCircle size={10} className="text-white"/>}
+                                                              </button>
+                                                          </td>
+                                                      );
+                                                  })}
+                                              </tr>
+                                          ))}
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+
+                          {cascadeResults && (
+                              <div className={`p-5 rounded-2xl border transition-all duration-500 shadow-2xl backdrop-blur-md ${cascadeResults.netProfit > 0 ? 'bg-emerald-900/20 border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.1)]' : cascadeResults.allLost ? 'bg-red-900/20 border-red-500/30' : 'bg-slate-800/50 border-slate-700'}`}>
+                                  <div className="flex flex-wrap items-center justify-between gap-4">
+                                      <div className="flex gap-6 items-center w-full md:w-auto">
+                                          <div><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Вложено</p><p className="text-xl font-bold text-slate-300">{formatUSD(cascadeResults.actualBank)}</p></div>
+                                          <div className="w-px h-8 bg-slate-700"></div>
+                                          <div><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Выиграно</p><p className={`text-2xl font-black ${cascadeResults.totalWonPayout > 0 ? 'text-emerald-400' : 'text-slate-500'}`}>{formatUSD(cascadeResults.totalWonPayout)}</p></div>
+                                          <div className="w-px h-8 bg-slate-700"></div>
+                                          <div><p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Профит (Факт)</p><p className={`text-3xl font-black ${cascadeResults.netProfit > 0 ? 'text-emerald-400' : cascadeResults.netProfit === 0 ? 'text-slate-400' : 'text-red-400'}`}>{cascadeResults.netProfit > 0 ? '+' : ''}{formatUSD(cascadeResults.netProfit)}</p></div>
+                                      </div>
+                                      {!cascadeResults.allLost && !cascadeResults.allPending && cascadeResults.potentialPayout > cascadeResults.totalWonPayout && (
+                                          <div className="bg-amber-900/20 border border-amber-500/30 px-4 py-2 rounded-lg text-right"><p className="text-[9px] text-amber-300 uppercase font-bold tracking-wider">Еще в игре (Макс. Выплата)</p><p className="text-lg font-bold text-amber-400">{formatUSD(cascadeResults.potentialPayout)}</p></div>
+                                      )}
+                                      <div className="w-full md:w-auto mt-4 md:mt-0">
+                                          <button onClick={saveToHistory} disabled={cascadeResults.actualBank === 0} className={`w-full bg-gradient-to-br from-rose-500 to-red-600 shadow-[0_0_15px_rgba(225,29,72,0.3)] text-white rounded-xl px-6 py-3 flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-[10px] transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100`}>
+                                              <Save size={18} /> В общую историю
+                                          </button>
+                                      </div>
+                                  </div>
+                              </div>
+                          )}
+
+                          {cascadeResults && (
+                              <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden backdrop-blur-md">
+                                  <div className="p-4 border-b border-slate-700 bg-slate-800/80"><h2 className="font-bold text-white uppercase text-sm">Список Ставок для БК</h2></div>
+                                  <div className="overflow-x-auto max-h-[400px] overflow-y-auto custom-scrollbar">
+                                      <table className="w-full text-left border-collapse min-w-[700px]">
+                                          <thead className="sticky top-0 z-10 bg-slate-800 border-b border-slate-700">
+                                              <tr>
+                                                  <th className="py-3 px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider text-center w-8">✓</th>
+                                                  <th className="py-3 px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider text-center">№</th>
+                                                  <th className="py-3 px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider">События в экспрессе</th>
+                                                  <th className="py-3 px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider text-center">Итоговый Кэф.</th>
+                                                  <th className="py-3 px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider text-center">Сумма Ставки</th>
+                                                  <th className="py-3 px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider text-right">Потенц. Выплата</th>
+                                              </tr>
+                                          </thead>
+                                          <tbody className="divide-y divide-slate-700/30">
+                                              {cascadeResults.expresses.map((exp) => {
+                                                  const isPlaced = placedBetsCascade.has(exp.id);
+                                                  return (
+                                                      <tr key={exp.id} className={`transition-all duration-300 ${exp.status === 'LOST' ? 'bg-red-950/20 grayscale-[40%]' : exp.status === 'WON' ? 'bg-emerald-900/10' : 'hover:bg-slate-800/30'} ${isPlaced ? 'opacity-70' : ''}`}>
+                                                          <td className="py-3 px-3 text-center">
+                                                              <input type="checkbox" checked={isPlaced} onChange={() => { const newSet = new Set(placedBetsCascade); if(newSet.has(exp.id)) newSet.delete(exp.id); else newSet.add(exp.id); setPlacedBetsCascade(newSet); }} className="w-4 h-4 cursor-pointer accent-rose-500 rounded bg-slate-800 border-slate-600"/>
+                                                          </td>
+                                                          <td className="py-3 px-3 text-center">
+                                                              <div className="flex flex-col items-center">
+                                                                  <span className="font-mono text-xs text-slate-400">{exp.name.split(' ')[1]}</span>
+                                                                  {exp.status === 'WON' && <span className="text-[9px] bg-emerald-900 text-emerald-400 px-1 py-0.5 rounded mt-1 font-bold">ЗАШЕЛ</span>}
+                                                                  {exp.status === 'LOST' && <span className="text-[9px] bg-red-900 text-red-400 px-1 py-0.5 rounded mt-1 font-bold">СЛИВ</span>}
+                                                                  {exp.status === 'PENDING' && <span className="text-[9px] bg-slate-700 text-slate-300 px-1 py-0.5 rounded mt-1 font-bold">ОЖИДАЕТ</span>}
+                                                              </div>
+                                                          </td>
+                                                          <td className="py-3 px-3">
+                                                              <div className="flex flex-wrap gap-1">
+                                                                  {exp.parts.map((match, i) => (
+                                                                      <div key={i} className={`flex items-center gap-1.5 px-2 py-1 rounded text-[10px] border ${match.status === 'WON' ? 'bg-emerald-900/30 border-emerald-700/50 text-emerald-200' : match.status === 'LOST' ? 'bg-red-900/30 border-red-700/50 text-red-300 line-through' : 'bg-slate-800 border-slate-700 text-slate-300'}`}>
+                                                                          <span className="max-w-[80px] truncate" title={match.name}>{match.name}</span><span className="font-bold opacity-70">x{match.odd}</span>
+                                                                      </div>
+                                                                  ))}
+                                                              </div>
+                                                          </td>
+                                                          <td className="py-3 px-3 text-center"><span className="inline-block bg-slate-800 border border-slate-600 font-bold px-2 py-1 text-xs rounded text-rose-300">{exp.totalOdd.toFixed(2)}</span></td>
+                                                          <td className="py-3 px-3 text-center"><span className="font-bold text-sm text-white bg-slate-800/50 px-2 py-1 rounded border border-slate-700">{formatUSD(exp.stake)}</span></td>
+                                                          <td className="py-3 px-3 text-right"><span className={`font-bold text-sm ${exp.status === 'WON' ? 'text-emerald-400' : exp.status === 'LOST' ? 'text-slate-500' : 'text-amber-400'}`}>{formatUSD(exp.payout)}</span></td>
+                                                      </tr>
+                                                  );
+                                              })}
+                                          </tbody>
+                                      </table>
+                                  </div>
+                              </div>
+                          )}
+                      </div>
+                  </div>
+              );
+          };
+
+          const renderChaserTab = () => (
+              <div className="bg-slate-900/80 border border-red-500/30 rounded-2xl p-6 backdrop-blur-xl shadow-2xl max-w-4xl mx-auto">
+                  <div className="bg-red-900/30 border border-red-500/50 p-4 rounded-xl mb-6 text-red-100 text-sm shadow-inner w-full">
+                      💡 <b>Умный Догон (Target Chaser):</b> Введите желаемую чистую прибыль. Калькулятор рассчитает ставку так, чтобы при выигрыше отбить все предыдущие минусы и дать ровно эту прибыль сверху.
+                  </div>
+                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-700">
+                      <div className="flex items-center gap-3">
+                          <TrendingUp className="text-red-400" size={28} />
+                          <div><h2 className="text-xl font-bold text-white uppercase">Умный Догон (Target Chaser)</h2><p className="text-xs text-red-300">Безопасный отыгрыш на высоких коэффициентах</p></div>
+                      </div>
+                      <div className="bg-slate-800 border border-slate-600 px-4 py-2 rounded-lg text-right">
+                          <p className="text-[10px] text-slate-400 uppercase font-bold mb-0.5">Текущий Общий Банк</p>
+                          <p className="text-lg font-bold text-emerald-400">{formatUSD(parseFloat(mainBank))}</p>
+                      </div>
+                  </div>
+                  
+                  {chaserSteps.length === 0 ? (
+                      <div className="space-y-4 max-w-md mx-auto py-6">
+                          <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 text-center">
+                              <label className="text-xs text-slate-400 uppercase font-bold block mb-2">Желаемая Чистая Прибыль ($)</label>
+                              <input type="number" value={chaserTarget} onChange={e=>setChaserTarget(e.target.value)} className="w-full bg-slate-900 text-emerald-400 p-3 rounded border border-slate-600 text-center font-bold text-2xl focus:border-red-500 outline-none"/>
+                          </div>
+                          <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 text-center">
+                              <label className="text-xs text-slate-400 uppercase font-bold block mb-2">Коэффициент первой ставки</label>
+                              <input type="number" step="0.01" value={chaserInputOdd} onChange={e=>setChaserInputOdd(e.target.value)} className="w-full bg-slate-900 text-white p-3 rounded border border-slate-600 text-center font-bold text-xl focus:border-red-500 outline-none"/>
+                          </div>
+                          <button onClick={startChaser} className="w-full bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl shadow-lg py-4 uppercase tracking-wider transition-transform hover:scale-[1.01]">Начать Цикл Догона</button>
+                      </div>
+                  ) : (
+                      <div className="space-y-3">
+                          <div className="flex justify-between items-center bg-red-900/20 p-3 rounded-lg border border-red-500/30 mb-4 flex-wrap gap-2">
+                              <div className="flex gap-4 items-center">
+                                  <span className="text-sm font-bold text-emerald-300">Цель: +{formatUSD(parseFloat(chaserTarget))}</span>
+                                  <span className="text-sm font-bold text-red-300">Накопленный Убыток: -{formatUSD(chaserSteps.filter(s=>s.result==='LOST').reduce((a,b)=>a+b.stake,0))}</span>
+                              </div>
+                              <button onClick={() => {if(window.confirm('Сбросить текущий цикл?')) setChaserSteps([]);}} className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded transition-colors">Сброс Цикла</button>
+                          </div>
+                          
+                          {chaserSteps.map((step, idx) => (
+                              <div key={step.id} className={`flex flex-wrap md:flex-nowrap items-center gap-3 p-4 rounded-xl border transition-all ${step.result === 'PENDING' ? 'bg-slate-800 border-red-500/50 shadow-lg' : step.isDone ? 'bg-emerald-900/30 border-emerald-500/50' : 'bg-slate-900/50 border-slate-700 opacity-60'}`}>
+                                  {step.isDone ? (
+                                      <div className="w-full text-center py-2 text-emerald-400 font-bold flex flex-col items-center justify-center">
+                                          <span className="text-xl">🎉 Цикл закрыт! Все минусы отбиты.</span>
+                                          <span className="text-sm text-emerald-200 mt-1">Чистая прибыль: +{formatUSD(step.netProfit)} зачислена в банк.</span>
+                                          <button onClick={() => setChaserSteps([])} className="mt-4 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-lg text-xs font-bold transition-all">Новый Цикл</button>
+                                      </div>
+                                  ) : (
+                                      <>
+                                          <div className="w-12 text-center shrink-0"><span className="text-[10px] text-slate-500 uppercase font-bold">Шаг</span><p className="text-2xl font-black text-red-400">{idx + 1}</p></div>
+                                          
+                                          {step.result === 'PENDING' ? (
+                                              <>
+                                                  <div className="flex-1 min-w-[120px] bg-red-900/30 p-2 rounded border border-red-500/30 text-center">
+                                                      <span className="text-[10px] text-red-300 uppercase font-bold block mb-1">Сумма Ставки</span>
+                                                      <p className="text-2xl font-bold text-white">{formatUSD(step.stake)}</p>
+                                                  </div>
+                                                  <div className="w-32 shrink-0"><span className="text-[10px] text-slate-400 uppercase font-bold">Кэф (Редакт.)</span><input type="number" step="0.01" value={step.odd} onChange={e => {const n=[...chaserSteps]; n[idx].odd=parseFloat(e.target.value)||1.01; n[idx].stake=(parseFloat(chaserTarget)+chaserSteps.filter(s=>s.result==='LOST').reduce((a,b)=>a+b.stake,0))/(n[idx].odd-1); setChaserSteps(n);}} className="w-full bg-slate-950 text-white p-2.5 rounded border border-slate-600 text-center font-bold text-lg outline-none focus:border-red-500"/></div>
+                                                  <div className="flex gap-2 shrink-0 ml-auto items-center">
+                                                      <button onClick={() => handleChaserResult(idx, 'WON')} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 rounded-lg font-bold flex items-center gap-2"><CheckCircle size={18}/> Зашла</button>
+                                                      <button onClick={() => handleChaserResult(idx, 'LOST')} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-3 rounded-lg font-bold flex items-center gap-2"><XCircle size={18}/> Слив</button>
+                                                  </div>
+                                              </>
+                                          ) : (
+                                              <>
+                                                  <div className="flex-1 min-w-[120px]"><span className="text-[10px] text-slate-500 uppercase font-bold block">Ставка</span><p className="text-lg font-bold text-slate-300">{formatUSD(step.stake)}</p></div>
+                                                  <div className="ml-auto flex items-center gap-4">
+                                                      <span className="text-xs text-slate-400 font-mono">Кэф: {step.odd.toFixed(2)}</span>
+                                                      <span className="text-red-400 font-bold text-sm bg-red-900/30 px-3 py-1 rounded">❌ Минус {formatUSD(step.stake)}</span>
+                                                  </div>
+                                              </>
+                                          )}
+                                      </>
+                                  )}
+                              </div>
+                          ))}
+                      </div>
+                  )}
+              </div>
+          );
+
+          const renderStrategiesTab = () => {
+              return (
+                  <div>
+                      <div className="bg-fuchsia-900/30 border border-fuchsia-500/50 p-4 rounded-xl mb-4 text-fuchsia-100 text-sm shadow-inner w-full">
+                          💡 <b>Мои Стратегии:</b> Конструктор и дневник пользовательских ставок. Создавайте свои собственные стратегии, выделяйте под них виртуальный банк и ведите независимый учет.
+                      </div>
+                      {activeStrategyId ? (() => {
+                          const activeStrat = customStrategies.find(s => s.id === activeStrategyId);
+                          if (!activeStrat) return null;
+                          const stats = getStrategyStats(activeStrat);
+
+                          return (
+                              <div className="space-y-6">
+                                  <div className="bg-slate-900/80 border border-fuchsia-500/30 rounded-2xl p-6 backdrop-blur-xl shadow-2xl">
+                                      <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-700">
+                                          <div className="flex items-center gap-3">
+                                              <button onClick={() => setActiveStrategyId(null)} className="p-2 bg-slate-800 rounded-full hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"><ArrowLeft size={20} /></button>
+                                              <div><h2 className="text-xl font-bold text-white uppercase flex items-center gap-2">{activeStrat.name}</h2><p className="text-xs text-fuchsia-300 mt-1 max-w-lg">{activeStrat.description || 'Нет описания'}</p></div>
+                                          </div>
+                                          <div className="flex gap-2">
+                                              <button onClick={() => openStratModal(activeStrat)} className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"><Edit2 size={14}/> Настройки</button>
+                                              <button onClick={() => deleteStrategy(activeStrat.id)} className="flex items-center gap-1 bg-red-900/40 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all"><Trash2 size={14}/> Удалить</button>
+                                          </div>
+                                      </div>
+
+                                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-2">
+                                          <div className="bg-slate-800 p-3 rounded-xl border border-slate-700/50 text-center"><p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Стартовый Банк</p><p className="text-lg font-bold text-slate-300">{formatUSD(activeStrat.startBank)}</p></div>
+                                          <div className="bg-fuchsia-900/20 p-3 rounded-xl border border-fuchsia-500/30 text-center shadow-inner"><p className="text-[10px] text-fuchsia-300 uppercase tracking-wider mb-1">Доступный Банк</p><p className="text-xl font-black text-white">{formatUSD(stats.currentBank)}</p></div>
+                                          <div className="bg-amber-900/20 p-3 rounded-xl border border-amber-500/30 text-center"><p className="text-[10px] text-amber-300 uppercase tracking-wider mb-1">В игре (Ожидают)</p><p className="text-lg font-bold text-amber-400">{formatUSD(stats.inPlay)}</p></div>
+                                          <div className="bg-slate-800 p-3 rounded-xl border border-slate-700/50 text-center"><p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Профит</p><p className={`text-lg font-bold ${stats.netProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{stats.netProfit > 0 ? '+' : ''}{formatUSD(stats.netProfit)}</p></div>
+                                          <div className="bg-slate-800 p-3 rounded-xl border border-slate-700/50 text-center"><p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">ROI</p><p className={`text-lg font-bold ${stats.roi >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{stats.roi > 0 ? '+' : ''}{stats.roi.toFixed(1)}%</p></div>
+                                          <div className="bg-slate-800 p-3 rounded-xl border border-slate-700/50 text-center"><p className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Победы</p><p className="text-lg font-bold text-sky-400">{stats.winrate.toFixed(1)}%</p></div>
+                                      </div>
+                                  </div>
+
+                                  <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-4 flex flex-col md:flex-row gap-3 items-end shadow-lg">
+                                      <div className="w-full md:flex-1"><label className="text-[10px] text-slate-400 uppercase font-bold mb-1 block">Событие (Матч, Исход)</label><input type="text" value={newBetForm.match} onChange={e=>setNewBetForm({...newBetForm, match: e.target.value})} placeholder="Например: Арсенал - Челси (П1)" className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white focus:border-fuchsia-500 outline-none"/></div>
+                                      <div className="w-full md:w-32"><label className="text-[10px] text-slate-400 uppercase font-bold mb-1 block">Ставка ($)</label><input type="number" value={newBetForm.stake} onChange={e=>setNewBetForm({...newBetForm, stake: e.target.value})} placeholder="0.00" className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white focus:border-fuchsia-500 outline-none text-center"/></div>
+                                      <div className="w-full md:w-24"><label className="text-[10px] text-slate-400 uppercase font-bold mb-1 block">Коэф.</label><input type="number" step="0.01" value={newBetForm.odd} onChange={e=>setNewBetForm({...newBetForm, odd: e.target.value})} placeholder="0.00" className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white focus:border-fuchsia-500 outline-none text-center"/></div>
+                                      <button onClick={addCustomBet} className="w-full md:w-auto bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold py-2 px-6 rounded transition-colors flex items-center justify-center gap-2 h-[38px]"><Plus size={16}/> Добавить</button>
+                                  </div>
+
+                                  <div className="bg-slate-900/80 border border-slate-700/80 rounded-2xl overflow-hidden shadow-xl">
+                                      <div className="p-0 overflow-x-auto max-h-[500px] overflow-y-auto">
+                                          {activeStrat.bets.length === 0 ? <div className="p-10 text-center text-slate-500 text-sm">История ставок для этой стратегии пуста.</div> : (
+                                              <table className="w-full text-left border-collapse min-w-[700px]">
+                                                  <thead className="sticky top-0 bg-slate-800 border-b border-slate-700 z-10">
+                                                      <tr className="text-[10px] uppercase tracking-wider text-slate-400">
+                                                          <th className="py-3 px-4 font-semibold">Дата</th>
+                                                          <th className="py-3 px-4 font-semibold">Событие</th>
+                                                          <th className="py-3 px-4 font-semibold text-center">Ставка / Кэф</th>
+                                                          <th className="py-3 px-4 font-semibold text-center">Статус</th>
+                                                          <th className="py-3 px-4 font-semibold text-right">Выплата</th>
+                                                          <th className="py-3 px-4 font-semibold text-center w-12"></th>
+                                                      </tr>
+                                                  </thead>
+                                                  <tbody className="divide-y divide-slate-800/50">
+                                                      {activeStrat.bets.map(bet => (
+                                                          <tr key={bet.id} className="hover:bg-slate-800/30 transition-colors">
+                                                              <td className="py-3 px-4 text-[10px] text-slate-500 font-mono whitespace-nowrap">{bet.date}</td>
+                                                              <td className="py-3 px-4 text-xs font-bold text-slate-200">{bet.match}</td>
+                                                              <td className="py-3 px-4 text-center"><span className="text-white font-bold text-sm">{formatUSD(bet.stake)}</span><span className="text-slate-500 text-xs ml-2">x {bet.odd.toFixed(2)}</span></td>
+                                                              <td className="py-3 px-4">
+                                                                  {bet.status === 'PENDING' ? (
+                                                                      <div className="flex items-center justify-center gap-1">
+                                                                          <button onClick={()=>resolveCustomBet(activeStrat.id, bet.id, 'WON')} className="p-1.5 bg-emerald-900/40 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded transition-colors" title="Выигрыш"><CheckCircle size={16}/></button>
+                                                                          <button onClick={()=>resolveCustomBet(activeStrat.id, bet.id, 'RETURN')} className="p-1.5 bg-slate-800 text-slate-400 hover:bg-slate-600 hover:text-white rounded transition-colors" title="Возврат"><RotateCcw size={16}/></button>
+                                                                          <button onClick={()=>resolveCustomBet(activeStrat.id, bet.id, 'LOST')} className="p-1.5 bg-red-900/40 text-red-400 hover:bg-red-600 hover:text-white rounded transition-colors" title="Проигрыш"><XCircle size={16}/></button>
+                                                                      </div>
+                                                                  ) : (
+                                                                      <div className="text-center">
+                                                                          {bet.status === 'WON' && <span className="text-[10px] font-bold bg-emerald-900/30 text-emerald-400 px-2 py-1 rounded uppercase">Победа</span>}
+                                                                          {bet.status === 'RETURN' && <span className="text-[10px] font-bold bg-slate-800 text-slate-400 px-2 py-1 rounded uppercase">Возврат</span>}
+                                                                          {bet.status === 'LOST' && <span className="text-[10px] font-bold bg-red-900/30 text-red-400 px-2 py-1 rounded uppercase">Проигрыш</span>}
+                                                                      </div>
+                                                                  )}
+                                                              </td>
+                                                              <td className="py-3 px-4 text-right">
+                                                                  {bet.status === 'WON' && <span className="text-emerald-400 font-bold">+{formatUSD(bet.stake * bet.odd - bet.stake)}</span>}
+                                                                  {bet.status === 'RETURN' && <span className="text-slate-400 font-bold">0.00 $</span>}
+                                                                  {bet.status === 'LOST' && <span className="text-red-400 font-bold">-{formatUSD(bet.stake)}</span>}
+                                                                  {bet.status === 'PENDING' && <span className="text-amber-400/80">Ожидает (~ {formatUSD(bet.stake * bet.odd)})</span>}
+                                                              </td>
+                                                              <td className="py-3 px-4 text-center"><button onClick={()=>deleteCustomBet(activeStrat.id, bet.id)} className="text-slate-600 hover:text-red-400"><Trash2 size={14}/></button></td>
+                                                          </tr>
+                                                      ))}
+                                                  </tbody>
+                                              </table>
+                                          )}
+                                      </div>
+                                  </div>
+                              </div>
+                          );
+                      })() : (
+                          <div>
+                              <div className="flex items-center justify-between mb-6"><div><h2 className="text-2xl font-bold text-white uppercase tracking-tight">Мои Стратегии</h2><p className="text-slate-400 text-sm mt-1">Конструктор и дневник пользовательских ставок</p></div></div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                  <div onClick={() => openStratModal()} className="bg-slate-800/30 border-2 border-dashed border-fuchsia-500/50 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-fuchsia-900/20 hover:border-fuchsia-400 transition-all min-h-[180px] group">
+                                      <div className="bg-fuchsia-600/20 p-4 rounded-full group-hover:bg-fuchsia-600/40 transition-colors"><Plus size={32} className="text-fuchsia-400 group-hover:text-fuchsia-300" /></div><span className="font-bold text-fuchsia-300 uppercase tracking-wider text-sm">Создать Стратегию</span>
+                                  </div>
+                                  {customStrategies.map(strat => {
+                                      const stats = getStrategyStats(strat);
+                                      return (
+                                          <div key={strat.id} className="bg-slate-900/80 border border-slate-700 hover:border-fuchsia-500/50 rounded-2xl p-5 shadow-lg hover:shadow-[0_0_20px_rgba(217,70,239,0.15)] transition-all flex flex-col min-h-[180px] relative overflow-hidden group">
+                                              <div className="absolute top-0 left-0 w-1 h-full bg-fuchsia-600 opacity-50 group-hover:opacity-100 transition-opacity"></div>
+                                              <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                  <button onClick={(e) => { e.stopPropagation(); openStratModal(strat); }} className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded"><Edit2 size={12}/></button>
+                                                  <button onClick={(e) => { e.stopPropagation(); deleteStrategy(strat.id); }} className="p-1.5 bg-red-900/40 hover:bg-red-600 text-red-400 hover:text-white rounded"><Trash2 size={12}/></button>
+                                              </div>
+                                              <div className="flex justify-between items-start mb-2 pr-16 cursor-pointer" onClick={() => setActiveStrategyId(strat.id)}><h3 className="font-bold text-lg text-white truncate pr-2">{strat.name}</h3></div>
+                                              <p className="text-xs text-slate-500 line-clamp-2 mb-4 flex-1 cursor-pointer" onClick={() => setActiveStrategyId(strat.id)}>{strat.description || 'Нет описания'}</p>
+                                              <div className="grid grid-cols-2 gap-2 mt-auto cursor-pointer" onClick={() => setActiveStrategyId(strat.id)}>
+                                                  <div className="bg-slate-800/50 rounded-lg p-2 border border-slate-700/50"><p className="text-[9px] text-slate-400 uppercase tracking-wider">Доступный Банк</p><p className="font-bold text-white text-sm">{formatUSD(stats.currentBank, 0)}</p></div>
+                                                  <div className="bg-slate-800/50 rounded-lg p-2 border border-slate-700/50"><p className="text-[9px] text-slate-400 uppercase tracking-wider">Профит</p><p className={`font-bold text-sm ${stats.netProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{stats.netProfit > 0 ? '+' : ''}{formatUSD(stats.netProfit, 0)}</p></div>
+                                              </div>
+                                          </div>
+                                      );
+                                  })}
+                              </div>
+                          </div>
+                      )}
+
+                      {showStratModal && (
+                          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+                              <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden">
+                                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-fuchsia-500 to-purple-500"></div>
+                                  <h3 className="text-xl font-bold text-white uppercase mb-6">{editStratId ? 'Редактировать Стратегию' : 'Новая Стратегия'}</h3>
+                                  <div className="space-y-4">
+                                      <div><label className="text-xs text-slate-400 uppercase font-bold block mb-1">Название *</label><input type="text" value={stratForm.name} onChange={e=>setStratForm({...stratForm, name: e.target.value})} className="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:border-fuchsia-500 outline-none" placeholder="Например: Тоталы во 2 тайме"/></div>
+                                      <div><label className="text-xs text-slate-400 uppercase font-bold block mb-1">Описание</label><textarea value={stratForm.description} onChange={e=>setStratForm({...stratForm, description: e.target.value})} className="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:border-fuchsia-500 outline-none h-24 resize-none" placeholder="Краткие правила стратегии..."></textarea></div>
+                                      <div><label className="text-xs text-slate-400 uppercase font-bold block mb-1">Начальный Банк ($) *</label><input type="number" value={stratForm.startBank} onChange={e=>setStratForm({...stratForm, startBank: e.target.value})} className="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:border-fuchsia-500 outline-none" placeholder="100"/></div>
+                                  </div>
+                                  <div className="flex gap-3 mt-8">
+                                      <button onClick={() => setShowStratModal(false)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition-colors">Отмена</button>
+                                      <button onClick={saveStrategy} disabled={!stratForm.name || !stratForm.startBank} className="flex-1 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Сохранить</button>
+                                  </div>
+                              </div>
+                          </div>
+                      )}
+                  </div>
+              );
+          };
+
+          const renderMatchesGrid = () => {
+              const isTotals = activeTab === 'totals'; const isBtts = activeTab === 'btts'; const isSystems = activeTab === 'systems'; const isIt = activeTab === 'it';
+              const isSystemsLike = isSystems || (isIt && itStrategy === 'ht_ft_goals');
+              const matchesToRender = getActiveMatches();
+              
+              const updateM = (idx, field, val) => {
+                  if(activeTab === 'classic') setClassicMatches(prev => {const n = [...prev]; n[idx][field] = val; return n;});
+                  else if(isTotals) setTotalsMatches(prev => {const n = [...prev]; n[idx][field] = val; return n;});
+                  else if(isBtts) setBttsMatches(prev => {const n = [...prev]; n[idx][field] = val; return n;});
+                  else if(isIt) {
+                      if(itStrategy === 'synth_itb') setItSynthMatches(prev => {const n = [...prev]; n[idx][field] = val; return n;});
+                      else if(itStrategy === 'safe_underdog') setItSafeMatches(prev => {const n = [...prev]; n[idx][field] = val; return n;});
+                      else setItHtFtMatches(prev => {const n = [...prev]; n[idx][field] = val; return n;});
+                  }
+                  else setSystemsMatches(prev => {const n = [...prev]; n[idx][field] = val; return n;});
+              }
+              const updateO = (mIdx, oIdx, field, val) => {
+                  if(activeTab === 'classic') setClassicMatches(prev => {const n = [...prev]; n[mIdx].outcomes[oIdx][field] = val; return n;});
+                  else if(isTotals) setTotalsMatches(prev => {const n = [...prev]; n[mIdx].outcomes[oIdx][field] = val; return n;});
+                  else if(isBtts) setBttsMatches(prev => {const n = [...prev]; n[mIdx].outcomes[oIdx][field] = val; return n;});
+                  else if(isIt) {
+                      if(itStrategy === 'synth_itb') setItSynthMatches(prev => {const n = [...prev]; n[mIdx].outcomes[oIdx][field] = val; return n;});
+                      else if(itStrategy === 'safe_underdog') setItSafeMatches(prev => {const n = [...prev]; n[mIdx].outcomes[oIdx][field] = val; return n;});
+                  }
+              }
+
+              const borderTheme = isSystems ? 'border-indigo-700/50' : isTotals ? 'border-blue-700/50' : isBtts ? 'border-amber-700/50' : isIt ? 'border-orange-700/50' : 'border-emerald-700/50';
+              const focusTheme = isSystems ? 'focus:ring-indigo-400' : isTotals ? 'focus:ring-blue-400' : isBtts ? 'focus:ring-amber-400' : isIt ? 'focus:ring-orange-400' : 'focus:ring-emerald-400';
+              const activeTheme = isTotals ? 'bg-blue-900/60 border-blue-500/50 accent-blue-500' : isBtts ? 'bg-amber-900/60 border-amber-500/50 accent-amber-500' : isSystems ? 'bg-indigo-900/60 border-indigo-500/50 accent-indigo-500' : isIt ? 'bg-orange-900/60 border-orange-500/50 accent-orange-500' : 'bg-emerald-900/60 border-emerald-500/50 accent-emerald-500';
+
+              return (
+                  <>
+                  {activeTab === 'classic' && (
+                      <div className="bg-emerald-900/30 border border-emerald-500/50 p-4 rounded-xl mb-4 text-emerald-100 text-sm shadow-inner">
+                          💡 <b>Классический Датчинг:</b> Введите коэффициенты на взаимоисключающие исходы. Калькулятор распределит банк так, чтобы при заходе ЛЮБОГО из выбранных исходов (Основа) вы получили одинаковую прибыль. Страховки вернут сумму ставки.
+                      </div>
+                  )}
+                  {isSystems && systemStrategy === 'matrix' && (
+                      <div className="bg-indigo-900/30 border border-indigo-500/50 p-4 rounded-xl mb-4 text-indigo-100 text-sm shadow-inner">
+                          💡 <b>Матрица:</b> Перекрытие сложных исходов (например, ничьих). Система собирает все возможные экспрессы выбранной размерности. Выигрыш даже части экспрессов может принести крупный профит.
+                      </div>
+                  )}
+                  {isSystems && systemStrategy === 'anchors' && (
+                      <div className="bg-indigo-900/30 border border-indigo-500/50 p-4 rounded-xl mb-4 text-indigo-100 text-sm shadow-inner">
+                          💡 <b>Якоря + Бомбы:</b> Первые два события (Якоря) идут во все экспрессы — они должны быть 'железобетонными'. Остальные (Бомбы) комбинируются между собой. Отличный способ разогнать кэф!
+                      </div>
+                  )}
+                  {isSystems && systemStrategy === 'fullcover' && (
+                      <div className="bg-indigo-900/30 border border-indigo-500/50 p-4 rounded-xl mb-4 text-indigo-100 text-sm shadow-inner">
+                          💡 <b>Веер (Full Cover):</b> Полное перекрытие для 5 матчей. Формируются экспрессы по 3, 4 и 5 событий. Тройники работают как страховка, а 4-5 приносят основную прибыль.
+                      </div>
+                  )}
+                  {isSystems && systemStrategy === 'anti_express' && (
+                      <div className="bg-red-900/30 border border-red-500/50 p-4 rounded-xl mb-4 text-red-100 text-sm shadow-inner">
+                          💡 <b>Анти-Экспресс:</b> Выберите 5 матчей с явными фаворитами. Система поставит так, что вы выиграете, если ХОТЯ БЫ ОДИН фаворит оступится (сыграет 'Осечка').
+                      </div>
+                  )}
+                  {isSystems && systemStrategy === 'british' && (
+                      <div className="bg-indigo-900/30 border border-indigo-500/50 p-4 rounded-xl mb-4 text-indigo-100 text-sm shadow-inner">
+                          💡 <b>Британские Системы (Yankee, Canadian, Heinz):</b> Классическое полное перекрытие всех возможных экспрессов от двойников до максимума. Банк делится на равные части.
+                      </div>
+                  )}
+                  {isTotals && totalsStrategy === 'smart' && (
+                      <div className="bg-blue-900/30 border border-blue-500/50 p-4 rounded-xl mb-4 text-blue-100 text-sm shadow-inner">
+                          💡 <b>Умная Страховка (Тоталы):</b> Основная ставка идет на то, что везде будет ТБ 2.5. Если в одном матче будет 'низ' (ТМ 2.5), сработает страховка и вернет банк.
+                      </div>
+                  )}
+                  {isTotals && totalsStrategy === 'anti' && (
+                      <div className="bg-blue-900/30 border border-blue-500/50 p-4 rounded-xl mb-4 text-blue-100 text-sm shadow-inner">
+                          💡 <b>Анти-Попан:</b> Обратная стратегия. Ждем, что во всех матчах будет мало голов (ТМ). Идеально для низовых чемпионатов.
+                      </div>
+                  )}
+                  {isTotals && totalsStrategy === 'banker' && (
+                      <div className="bg-blue-900/30 border border-blue-500/50 p-4 rounded-xl mb-4 text-blue-100 text-sm shadow-inner">
+                          💡 <b>Банкеры:</b> Первые два матча идут как 'железобетонные' ТБ 2.5 (без страховки). Остальные перекрываются. Максимальный профит при минимальных вложениях.
+                      </div>
+                  )}
+                  {isTotals && totalsStrategy === 'teasers' && (
+                      <div className="bg-cyan-900/30 border border-cyan-500/50 p-4 rounded-xl mb-4 text-cyan-100 text-sm shadow-inner">
+                          💡 <b>Тизеры (Сдвиг):</b> Искусственно понижаем риски, покупая 'безопасные' тоталы (например, ТБ 1.5). Низкие кэфы компенсируются матричной сборкой экспрессов.
+                      </div>
+                  )}
+                  {isTotals && totalsStrategy === 'constructor' && (
+                      <div className="bg-blue-900/30 border border-blue-500/50 p-4 rounded-xl mb-4 text-blue-100 text-sm shadow-inner">
+                          💡 <b>Конструктор Тоталов:</b> Выберите любое количество матчей и настройте исходы и страховки вручную под свои нужды.
+                      </div>
+                  )}
+                  {isBtts && bttsStrategy === 'shootout' && (
+                      <div className="bg-amber-900/30 border border-amber-500/50 p-4 rounded-xl mb-4 text-amber-100 text-sm shadow-inner">
+                          💡 <b>Перестрелка (ОЗ):</b> Ставим на то, что все команды забьют (ОЗ - Да). Один 'сухой' матч перекрывается страховкой.
+                      </div>
+                  )}
+                  {isBtts && bttsStrategy === 'zero' && (
+                      <div className="bg-amber-900/30 border border-amber-500/50 p-4 rounded-xl mb-4 text-amber-100 text-sm shadow-inner">
+                          💡 <b>Охота на нули:</b> Ищем матчи, где хотя бы одна команда не забьет (ОЗ - Нет). Отличная стратегия для низовых лиг.
+                      </div>
+                  )}
+                  {isBtts && bttsStrategy === 'constructor' && (
+                      <div className="bg-amber-900/30 border border-amber-500/50 p-4 rounded-xl mb-4 text-amber-100 text-sm shadow-inner">
+                          💡 <b>Конструктор ОЗ:</b> Выберите любое количество матчей и настройте исходы вручную.
+                      </div>
+                  )}
+                  {isIt && itStrategy === 'synth_itb' && (
+                      <div className="bg-orange-900/30 border border-orange-500/50 p-4 rounded-xl mb-4 text-orange-100 text-sm shadow-inner">
+                          💡 <b>Синтетический ИТБ:</b> Замените низкий кэф букмекера на "ИТБ 1.5" составной ставкой на точное количество голов. Это дает прирост коэффициента на 0.15 - 0.30 пунктов!
+                      </div>
+                  )}
+                  {isIt && itStrategy === 'safe_underdog' && (
+                      <div className="bg-orange-900/30 border border-orange-500/50 p-4 rounded-xl mb-4 text-orange-100 text-sm shadow-inner">
+                          💡 <b>Безопасный Андердог:</b> Ставьте на гол аутсайдера (ИТБ 0.5) со страховкой на точный счет 0:0. Любой гол вашей команды дает прибыль, а сухой матч на 0:0 возвращает банк!
+                      </div>
+                  )}
+                  {isIt && itStrategy === 'ht_ft_goals' && (
+                      <div className="bg-orange-900/30 border border-orange-500/50 p-4 rounded-xl mb-4 text-orange-100 text-sm shadow-inner">
+                          💡 <b>Гол в обоих таймах:</b> Выберите забивные команды и ставьте на огромный кэф "Забьет в обоих таймах: Да". Калькулятор соберет из них надежную матрицу-систему!
+                      </div>
+                  )}
+                  <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${matchesToRender.length > 4 ? (matchesToRender.length === 5 ? 5 : 4) : matchesToRender.length} gap-3 mb-5 transition-all`}>
+                  {matchesToRender.map((match, mIndex) => (
+                    <div key={match.id} className={`bg-slate-900/80 border ${borderTheme} rounded-xl p-3 shadow-lg backdrop-blur-md relative overflow-hidden group`}>
+                      {isTotals && totalsStrategy === 'banker' && mIndex < 2 && <div className="absolute top-0 right-0 bg-red-500/20 text-red-300 text-[8px] font-bold px-2 py-0.5 rounded-bl uppercase">Банкер</div>}
+                      {isSystems && systemStrategy === 'anchors' && mIndex < 2 && <div className="absolute top-0 right-0 bg-amber-500/20 text-amber-300 text-[8px] font-bold px-2 py-0.5 rounded-bl uppercase tracking-wider">⚓ Якорь</div>}
+                      {isSystems && systemStrategy === 'anchors' && mIndex >= 2 && <div className="absolute top-0 right-0 bg-red-500/20 text-red-300 text-[8px] font-bold px-2 py-0.5 rounded-bl uppercase tracking-wider">💣 Бомба</div>}
+                      
+                      <div className="flex items-center gap-2 mb-3">
+                        {isSystemsLike && !isIt ? <Network className="text-indigo-400" size={16}/> : isIt ? <User className="text-orange-400" size={16}/> : <Goal className={isTotals ? "text-blue-400" : isBtts ? "text-amber-400" : "text-emerald-400"} size={16} />}
+                        <input type="text" value={match.name} onChange={(e) => updateM(mIndex, 'name', e.target.value)} className={`bg-transparent text-white font-bold text-sm border-b border-slate-600/50 focus:outline-none w-full pb-1 ${focusTheme}`} placeholder={isSystemsLike ? "Событие" : "Команды"} />
+                      </div>
+                      
+                      {isSystemsLike ? (
+                          <div className="flex gap-2">
+                              <input type="text" value={match.label} onChange={(e) => updateM(mIndex, 'label', e.target.value)} className={`bg-slate-950 text-slate-300 text-xs border border-slate-700 rounded px-2 py-1.5 w-1/2 focus:outline-none focus:ring-1 ${focusTheme}`} placeholder="Исход (П1, Ничья...)" />
+                              <input type="number" step="0.01" value={match.odd} onChange={(e) => updateM(mIndex, 'odd', e.target.value)} className={`bg-slate-950 text-white font-bold text-sm border border-slate-700 rounded px-2 py-1.5 w-1/2 text-center focus:outline-none focus:ring-1 ${focusTheme}`} placeholder="Коэф" />
+                          </div>
+                      ) : (
+                          <div className="flex flex-row gap-2 justify-between">
+                            {match.outcomes.map((outcome, oIndex) => (
+                              <div key={oIndex} className={`flex flex-col items-center gap-1.5 p-1.5 rounded-lg border transition-colors flex-1 ${outcome.active ? activeTheme : 'bg-slate-900/50 border-transparent opacity-50'}`}>
+                                <label className="text-xs font-bold text-slate-200 cursor-pointer flex items-center gap-1 w-full justify-center">
+                                  <input type="checkbox" checked={outcome.active} onChange={(e) => updateO(mIndex, oIndex, 'active', e.target.checked)} className={`w-3 h-3 cursor-pointer ${isTotals ? 'accent-blue-500' : isBtts ? 'accent-amber-500' : isIt ? 'accent-orange-500' : 'accent-emerald-500'}`} />
+                                  {isSystems && systemStrategy === 'anti_express' ? outcome.label : isSystems && systemStrategy === 'british' ? 'Выбор' : outcome.label}
+                                </label>
+                                <input type="number" step="0.01" value={outcome.odd} disabled={!outcome.active} onChange={(e) => updateO(mIndex, oIndex, 'odd', e.target.value)} className={`bg-slate-950 text-white font-bold text-xs border border-slate-700 rounded px-1 py-1 w-full text-center focus:outline-none focus:ring-1 ${focusTheme} disabled:opacity-50`} placeholder="Коэф" />
+                              </div>
+                            ))}
+                          </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                </>
+              );
+          };
+
+          const themeMain = activeTab === 'totals' ? 'bg-blue-600/20 border-blue-500 text-blue-400' : activeTab === 'btts' ? 'bg-amber-600/20 border-amber-500 text-amber-400' : activeTab === 'systems' ? 'bg-indigo-600/20 border-indigo-500 text-indigo-400' : activeTab === 'it' ? 'bg-orange-600/20 border-orange-500 text-orange-400' : 'bg-emerald-600/20 border-emerald-500 text-emerald-400';
+          const themeCb = activeTab === 'totals' ? 'accent-blue-500' : activeTab === 'btts' ? 'accent-amber-500' : activeTab === 'systems' ? 'accent-indigo-500' : activeTab === 'it' ? 'accent-orange-500' : 'accent-emerald-500';
+          const themeBtn = activeTab === 'totals' ? 'from-blue-500 to-cyan-600 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : activeTab === 'btts' ? 'from-amber-500 to-orange-600 shadow-[0_0_15px_rgba(245,158,11,0.3)]' : activeTab === 'systems' ? 'from-indigo-500 to-purple-600 shadow-[0_0_15px_rgba(99,102,241,0.3)]' : activeTab === 'it' ? 'from-orange-500 to-red-600 shadow-[0_0_15px_rgba(249,115,22,0.3)]' : 'from-emerald-500 to-teal-600 shadow-[0_0_15px_rgba(16,185,129,0.3)]';
+
+          return (
+            <div className="min-h-screen bg-slate-900 bg-cover bg-center bg-fixed relative text-slate-100 font-sans p-2 md:p-4" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&q=80&w=2000')" }}>
+              <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-[2px]"></div>
+
+              <div className="max-w-[1400px] mx-auto relative z-10">
+                
+                {renderTabs()}
+
+                {/* --- HEADER ДЛЯ ДАТЧИНГА/СИСТЕМ --- */}
+                {(activeTab === 'classic' || activeTab === 'totals' || activeTab === 'btts' || activeTab === 'systems' || activeTab === 'it') && (
+                    <header className="flex flex-col xl:flex-row items-center justify-between mb-4 pb-4 border-b border-slate-600/30 gap-4">
+                      <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+                        {activeTab === 'classic' && (
+                            <div className="flex bg-slate-900/60 p-1 rounded-lg border border-slate-700/50 backdrop-blur-md w-full sm:w-auto justify-center flex-wrap">
+                              <button onClick={() => setClassicCount(2)} className={`px-3 py-1.5 rounded text-sm font-bold transition-all ${classicCount === 2 ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-400 hover:text-emerald-200'}`}>2 Матча</button>
+                              <button onClick={() => setClassicCount(3)} className={`px-3 py-1.5 rounded text-sm font-bold transition-all ${classicCount === 3 ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-400 hover:text-emerald-200'}`}>3 Матча</button>
+                              <button onClick={() => setClassicCount(4)} className={`px-3 py-1.5 rounded text-sm font-bold transition-all ${classicCount === 4 ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-400 hover:text-emerald-200'}`}>4 Матча</button>
+                              <button onClick={() => setClassicCount(5)} className={`px-3 py-1.5 rounded text-sm font-bold transition-all ${classicCount === 5 ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-400 hover:text-emerald-200'}`}>5 Матчей</button>
+                              <button onClick={() => setClassicCount(6)} className={`px-3 py-1.5 rounded text-sm font-bold transition-all ${classicCount === 6 ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-400 hover:text-emerald-200'}`}>6 Матчей</button>
+                            </div>
+                        )}
+                        {activeTab === 'systems' && (
+                            <div className="flex items-center gap-2 bg-slate-900/60 p-1 rounded-lg border border-slate-700/50 backdrop-blur-md w-full sm:w-auto justify-center flex-wrap">
+                              <div className={`flex items-center gap-1 px-1 rounded transition-all ${systemStrategy === 'matrix' ? 'bg-indigo-600 shadow-md' : ''}`}>
+                                  <button onClick={() => handlePresetSwitch('systems', 'matrix')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${systemStrategy === 'matrix' ? 'text-white' : 'text-indigo-400 hover:text-indigo-200'}`}>Матрица</button>
+                                  {systemStrategy === 'matrix' && (
+                                      <select value={systemMatrixType} onChange={e => {setSystemMatrixType(e.target.value); setPlacedBetsSystems(new Set()); setSystemsModes({});}} className="bg-slate-900 text-indigo-100 text-[11px] font-bold border border-indigo-500 rounded px-1 py-1 outline-none cursor-pointer">
+                                          <option value="2/4">2 из 4</option>
+                                          <option value="3/4">3 из 4</option>
+                                          <option value="3/6">3 из 6</option>
+                                      </select>
+                                  )}
+                              </div>
+                              <button onClick={() => handlePresetSwitch('systems', 'anchors')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${systemStrategy === 'anchors' ? 'bg-indigo-600 text-white shadow-md' : 'text-indigo-400 hover:text-indigo-200'}`}>⚓ Якоря + Бомбы</button>
+                              <button onClick={() => handlePresetSwitch('systems', 'fullcover')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${systemStrategy === 'fullcover' ? 'bg-indigo-600 text-white shadow-md' : 'text-indigo-400 hover:text-indigo-200'}`}>🪭 Веер (5м)</button>
+                              <button onClick={() => handlePresetSwitch('systems', 'anti_express')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${systemStrategy === 'anti_express' ? 'bg-red-600 text-white shadow-md' : 'text-red-400 hover:text-red-200'}`}>🚫 Анти-Экспресс</button>
+                              <div className={`flex items-center gap-1 px-1 rounded transition-all ${systemStrategy === 'british' ? 'bg-indigo-600 shadow-md' : ''}`}>
+                                  <button onClick={() => handlePresetSwitch('systems', 'british')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${systemStrategy === 'british' ? 'text-white' : 'text-indigo-400 hover:text-indigo-200'}`}>🇬🇧 Британские</button>
+                                  {systemStrategy === 'british' && (
+                                      <select value={systemBritishType} onChange={e => {setSystemBritishType(e.target.value); setPlacedBetsSystems(new Set()); setSystemsModes({});}} className="bg-slate-900 text-indigo-100 text-[11px] font-bold border border-indigo-500 rounded px-1 py-1 outline-none cursor-pointer">
+                                          <option value="Yankee">Yankee (4м)</option>
+                                          <option value="Canadian">Canadian (5м)</option>
+                                          <option value="Heinz">Heinz (6м)</option>
+                                      </select>
+                                  )}
+                              </div>
+                            </div>
+                        )}
+                        {activeTab === 'totals' && (
+                            <div className="flex items-center gap-2 bg-slate-900/60 p-1 rounded-lg border border-slate-700/50 backdrop-blur-md w-full sm:w-auto justify-center flex-wrap">
+                              <button onClick={() => handlePresetSwitch('totals', 'smart')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${totalsStrategy === 'smart' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-400 hover:text-blue-200'}`}>🛡️ Страховка</button>
+                              <button onClick={() => handlePresetSwitch('totals', 'anti')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${totalsStrategy === 'anti' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-400 hover:text-blue-200'}`}>🎯 Анти-Попан</button>
+                              <button onClick={() => handlePresetSwitch('totals', 'banker')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${totalsStrategy === 'banker' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-400 hover:text-blue-200'}`}>🏦 Банкеры</button>
+                              <button onClick={() => handlePresetSwitch('totals', 'teasers')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${totalsStrategy === 'teasers' ? 'bg-cyan-600 text-white shadow-md' : 'text-cyan-400 hover:text-cyan-200'}`}>📉 Тизеры (Сдвиг)</button>
+                              <div className={`flex items-center gap-1 px-1 rounded transition-all ${totalsStrategy === 'constructor' ? 'bg-blue-600 shadow-md' : ''}`}>
+                                  <button onClick={() => handlePresetSwitch('totals', 'constructor')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${totalsStrategy === 'constructor' ? 'text-white' : 'text-blue-400 hover:text-blue-200'}`}>⚙️ Конструктор</button>
+                                  {totalsStrategy === 'constructor' && (
+                                      <select value={customTotalsCount} onChange={e => setCustomTotalsCount(Number(e.target.value))} className="bg-slate-900 text-blue-100 text-[11px] font-bold border border-blue-500 rounded px-1 py-1 outline-none">
+                                          {[3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} матчей</option>)}
+                                      </select>
+                                  )}
+                              </div>
+                            </div>
+                        )}
+                        {activeTab === 'btts' && (
+                            <div className="flex items-center gap-2 bg-slate-900/60 p-1 rounded-lg border border-slate-700/50 backdrop-blur-md w-full sm:w-auto justify-center flex-wrap">
+                              <button onClick={() => handlePresetSwitch('btts', 'shootout')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${bttsStrategy === 'shootout' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-amber-400 hover:text-amber-200'}`}>🔥 Перестрелка</button>
+                              <button onClick={() => handlePresetSwitch('btts', 'zero')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${bttsStrategy === 'zero' ? 'bg-amber-500 text-slate-900 shadow-md' : 'text-amber-400 hover:text-amber-200'}`}>❄️ Охота на нули</button>
+                              <div className={`flex items-center gap-1 px-1 rounded transition-all ${bttsStrategy === 'constructor' ? 'bg-amber-500 shadow-md' : ''}`}>
+                                  <button onClick={() => handlePresetSwitch('btts', 'constructor')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${bttsStrategy === 'constructor' ? 'text-slate-900' : 'text-amber-400 hover:text-amber-200'}`}>⚙️ Конструктор</button>
+                                  {bttsStrategy === 'constructor' && (
+                                      <select value={customBttsCount} onChange={e => setCustomBttsCount(Number(e.target.value))} className="bg-slate-900 text-amber-100 text-[11px] font-bold border border-amber-500 rounded px-1 py-1 outline-none">
+                                          {[3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} матчей</option>)}
+                                      </select>
+                                  )}
+                              </div>
+                            </div>
+                        )}
+                        {activeTab === 'it' && (
+                            <div className="flex items-center gap-2 bg-slate-900/60 p-1 rounded-lg border border-slate-700/50 backdrop-blur-md w-full sm:w-auto justify-center flex-wrap">
+                                <button onClick={() => handlePresetSwitch('it', 'synth_itb')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${itStrategy === 'synth_itb' ? 'bg-orange-600 text-white shadow-md' : 'text-orange-400 hover:text-orange-200'}`}>🧬 Синтетический ИТБ</button>
+                                <button onClick={() => handlePresetSwitch('it', 'safe_underdog')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${itStrategy === 'safe_underdog' ? 'bg-orange-600 text-white shadow-md' : 'text-orange-400 hover:text-orange-200'}`}>🛡️ Безопасный Андердог</button>
+                                <div className={`flex items-center gap-1 px-1 rounded transition-all ${itStrategy === 'ht_ft_goals' ? 'bg-orange-600 shadow-md' : ''}`}>
+                                    <button onClick={() => handlePresetSwitch('it', 'ht_ft_goals')} className={`px-3 py-1.5 rounded text-[11px] uppercase font-bold transition-all ${itStrategy === 'ht_ft_goals' ? 'text-white' : 'text-orange-400 hover:text-orange-200'}`}>⚽ Гол в обоих таймах</button>
+                                    {itStrategy === 'ht_ft_goals' && (
+                                        <select value={itHtFtSystemType} onChange={e => {setItHtFtSystemType(e.target.value); setPlacedBetsIt(new Set()); setItModes({});}} className="bg-slate-900 text-orange-100 text-[11px] font-bold border border-orange-500 rounded px-1 py-1 outline-none cursor-pointer">
+                                            <option value="2/3">2 из 3</option>
+                                            <option value="2/4">2 из 4</option>
+                                            <option value="3/4">3 из 4</option>
+                                        </select>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-center gap-3 bg-slate-900/60 px-4 py-2 rounded-xl border border-slate-700/50 backdrop-blur-md w-full xl:w-auto shadow-inner">
+                        <div className="flex flex-col border-r border-slate-700 pr-3">
+                          <label className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${activeTab==='systems'?'text-indigo-400':activeTab==='totals'?'text-blue-400':activeTab==='btts'?'text-amber-400':activeTab==='it'?'text-orange-400':'text-emerald-400'}`}>Игровой Банк (Ставка)</label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
+                            <input type="number" value={bank} onChange={(e) => setBank(e.target.value)} className="bg-slate-800/50 border border-slate-600 text-white font-bold text-sm rounded pl-6 pr-2 py-1.5 w-24 focus:outline-none focus:ring-1 transition-all"/>
+                          </div>
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Мин. ставка (Лимит)</label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm">$</span>
+                            <input type="number" step="0.05" value={minimumBet} onChange={(e) => setMinimumBet(e.target.value)} className="bg-slate-800 border border-slate-600 text-white font-bold text-sm rounded pl-6 pr-2 py-1.5 w-20 focus:outline-none focus:ring-1 transition-all"/>
+                          </div>
+                        </div>
+                      </div>
+                    </header>
+                )}
+
+                {/* --- РЕНДЕР ТЕКУЩЕЙ ВКЛАДКИ --- */}
+                {activeTab === 'strategies' ? renderStrategiesTab() : activeTab === 'ultra' ? renderUltraAggressionTab() : activeTab === 'chaser' ? renderChaserTab() : activeTab === 'cascade' ? renderCascadeTab() : (
+                    <>
+                        {renderMatchesGrid()}
+                        
+                        {results.error ? (
+                          <div className="bg-red-950/80 border border-red-800/80 rounded-xl p-6 text-center text-red-400 backdrop-blur-md mb-6"><ShieldAlert className="mx-auto mb-3 opacity-50" size={36} /><p className="text-sm font-bold">{results.error}</p></div>
+                        ) : results.summary ? (
+                          <div className="space-y-4 mb-8">
+                            
+                            {results.summary.isBankrupt && (
+                              <div className="bg-red-900/60 border border-red-500 rounded-lg p-3 flex items-center justify-center gap-2 text-red-100 animate-pulse shadow-lg"><ShieldAlert size={20} /><span className="text-sm font-bold">Внимание! Страховки съедают весь банк, на "Основу" денег не остается. Отключите часть исходов или увеличьте банк.</span></div>
+                            )}
+
+                            <div className="flex flex-col md:flex-row gap-4 items-stretch justify-between bg-slate-900/50 p-3 rounded-2xl border border-slate-700/50 backdrop-blur-md">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 flex-1">
+                                  <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 flex flex-col items-center justify-center text-center shadow-inner">
+                                    <p className="text-slate-400 text-[10px] uppercase tracking-widest mb-0.5">Сумма Ставок</p>
+                                    <p className="text-xl font-bold text-white">{formatUSD(results.summary.actualBank, 2)}</p>
+                                  </div>
+                                  <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 flex flex-col items-center justify-center text-center shadow-inner">
+                                    <p className="text-slate-400 text-[10px] uppercase tracking-widest mb-0.5">Ср. Выплата (Основа)</p>
+                                    <p className="text-xl font-bold text-slate-100">{formatUSD(results.summary.avgMainPayout, 2)}</p>
+                                  </div>
+                                  <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 flex flex-col items-center justify-center text-center shadow-inner">
+                                    <p className="text-slate-400 text-[10px] uppercase tracking-widest mb-0.5">Чистая Прибыль</p>
+                                    <p className="text-xl font-bold text-white">{results.summary.netProfit > 0 ? '+' : ''}{formatUSD(results.summary.netProfit, 2)}</p>
+                                  </div>
+                                  <div className="bg-slate-800 border border-slate-700 rounded-xl p-3 flex flex-col items-center justify-center text-center shadow-inner">
+                                    <p className="text-slate-400 text-[10px] uppercase tracking-widest mb-0.5">ROI (Основа)</p>
+                                    <div className="flex items-center gap-1 text-xl font-bold text-white">
+                                      {results.summary.roi > 0 ? '+' : ''}{results.summary.roi.toFixed(2)} <Percent size={16} />
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex shrink-0">
+                                    <button onClick={saveToHistory} disabled={results.summary.isBankrupt || results.summary.actualBank === 0} className={`h-full w-full md:w-36 bg-gradient-to-br ${themeBtn} text-white rounded-xl p-3 flex flex-col items-center justify-center gap-1.5 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none`}>
+                                        <Save size={24} />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-center leading-tight">В общую<br/>историю</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="bg-slate-900/80 border border-slate-700/80 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl">
+                              <div className="max-h-[500px] overflow-y-auto overflow-x-auto custom-scrollbar">
+                                <table className="w-full text-left border-collapse min-w-[800px]">
+                                  <thead className="sticky top-0 z-20">
+                                    <tr className="bg-slate-800 border-b border-slate-700/50 shadow-md">
+                                      <th className="py-3 px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider text-center w-8">✓</th>
+                                      <th className="py-3 px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider text-center">№</th>
+                                      <th className="py-3 px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider">События в экспрессе</th>
+                                      <th className="py-3 px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider text-center">Коэф.</th>
+                                      <th className="py-3 px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider text-center">Режим</th>
+                                      <th className="py-3 px-3 text-slate-400 font-semibold text-[10px] uppercase tracking-wider text-right">Ставка</th>
+                                      <th className="py-3 px-3 text-slate-300 font-semibold text-[10px] uppercase tracking-wider text-right bg-slate-800/50">Выплата</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-800/50">
+                                    {results.expresses.map((exp) => {
+                                      const isPlaced = activeTab === 'classic' ? placedBetsClassic.has(exp.id) : activeTab === 'totals' ? placedBetsTotals.has(exp.id) : activeTab === 'systems' ? placedBetsSystems.has(exp.id) : activeTab === 'it' ? placedBetsIt.has(exp.id) : placedBetsBtts.has(exp.id);
+                                      const toggle = () => {
+                                          if (activeTab === 'classic') { const s = new Set(placedBetsClassic); s.has(exp.id)?s.delete(exp.id):s.add(exp.id); setPlacedBetsClassic(s); }
+                                          else if (activeTab === 'totals') { const s = new Set(placedBetsTotals); s.has(exp.id)?s.delete(exp.id):s.add(exp.id); setPlacedBetsTotals(s); }
+                                          else if (activeTab === 'systems') { const s = new Set(placedBetsSystems); s.has(exp.id)?s.delete(exp.id):s.add(exp.id); setPlacedBetsSystems(s); }
+                                          else if (activeTab === 'it') { const s = new Set(placedBetsIt); s.has(exp.id)?s.delete(exp.id):s.add(exp.id); setPlacedBetsIt(s); }
+                                          else { const s = new Set(placedBetsBtts); s.has(exp.id)?s.delete(exp.id):s.add(exp.id); setPlacedBetsBtts(s); }
+                                      };
+                                      const setMode = (e) => {
+                                          if (activeTab === 'classic') setClassicModes(p => ({...p, [exp.hash]: e.target.value}));
+                                          else if (activeTab === 'totals') setTotalsModes(p => ({...p, [exp.hash]: e.target.value}));
+                                          else if (activeTab === 'systems') setSystemsModes(p => ({...p, [exp.hash]: e.target.value}));
+                                          else if (activeTab === 'it') setItModes(p => ({...p, [exp.hash]: e.target.value}));
+                                          else setBttsModes(p => ({...p, [exp.hash]: e.target.value}));
+                                      };
+
+                                      return (
+                                      <tr key={exp.id} className={`transition-all duration-300 ${exp.mode === 'SKIP' ? 'opacity-30 grayscale' : ''} ${isPlaced ? 'bg-slate-800/80 opacity-60' : 'hover:bg-slate-800/50'}`}>
+                                        <td className="py-2 px-3 text-center">
+                                          <input type="checkbox" disabled={exp.mode === 'SKIP'} checked={isPlaced} onChange={toggle} className={`w-4 h-4 cursor-pointer rounded bg-slate-800 border-slate-600 disabled:opacity-50 ${themeCb}`}/>
+                                        </td>
+                                        <td className="py-2 px-3 text-center font-mono text-xs text-slate-500">{exp.id}</td>
+                                        <td className="py-2 px-3">
+                                          <div className="flex flex-col gap-0.5">
+                                            {exp.parts.map((part, i) => (
+                                              <div key={i} className="flex justify-between items-center bg-slate-800/50 rounded px-2 py-0.5">
+                                                <span className="text-[11px] text-slate-300 w-32 lg:w-48 truncate" title={part.matchName}>{part.matchName}</span>
+                                                <div className="flex items-center gap-2">
+                                                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm min-w-[32px] text-center ${part.label.includes('ТМ') || part.label==='Нет' || part.label==='Осечка' || part.label==='Счет 0:0' ? 'bg-slate-700 text-slate-300' : 'bg-slate-900 text-white'}`}>{part.label}</span>
+                                                  <span className="text-[11px] text-slate-400 w-8 text-right">{parseFloat(part.odd).toFixed(2)}</span>
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </td>
+                                        <td className="py-2 px-3 text-center">
+                                          <span className={`inline-block border font-bold px-2 py-0.5 text-xs rounded ${exp.mode === 'SKIP' ? 'text-slate-600 border-slate-700 bg-transparent' : 'bg-slate-800 border-slate-600 text-slate-300'}`}>{exp.totalOdd.toFixed(2)}</span>
+                                        </td>
+                                        <td className="py-2 px-3 text-center">
+                                          <select value={exp.mode} onChange={setMode} className={`text-[10px] font-bold px-2 py-1 rounded cursor-pointer border focus:outline-none appearance-none text-center ${exp.mode === 'MAIN' ? themeMain : exp.mode === 'INSURE' ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-900 border-slate-800 text-slate-600'}`}>
+                                            <option value="MAIN">🎯 Основа</option>
+                                            <option value="INSURE">🛡️ Страховка</option>
+                                            <option value="SKIP">❌ Пропуск</option>
+                                          </select>
+                                        </td>
+                                        <td className="py-2 px-3 text-right"><span className={`font-bold text-sm ${exp.mode === 'SKIP' ? 'text-slate-600' : 'text-slate-200'}`}>{formatUSD(exp.betAmount, 2)}</span></td>
+                                        <td className={`py-2 px-3 text-right ${exp.mode === 'SKIP' ? '' : 'bg-slate-800/30'}`}>
+                                          <div className="flex flex-col items-end">
+                                            <span className={`font-bold text-sm ${exp.mode === 'MAIN' ? 'text-white' : exp.mode === 'INSURE' ? 'text-slate-400' : 'text-slate-600'}`}>{formatUSD(exp.payout, 2)}</span>
+                                            {exp.mode === 'INSURE' && <span className="text-[9px] text-slate-500 leading-none mt-0.5">Возврат</span>}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    )})}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+
+                          </div>
+                        ) : null}
+
+                        {/* --- ОБЩАЯ ИСТОРИЯ ДЛЯ КАЛЬКУЛЯТОРОВ --- */}
+                        <div className="bg-slate-900/80 border border-slate-700/80 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl mt-8">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-800 px-5 py-4 border-b border-slate-700/50 gap-3">
+                                <div className="flex items-center gap-2">
+                                    <HistoryIcon size={20} className="text-slate-400" />
+                                    <h2 className="text-white font-bold uppercase tracking-wider text-sm">Глобальная История Расчетов</h2>
+                                </div>
+                                <div className="flex items-center gap-4 self-end sm:self-auto">
+                                    <div className="text-[11px] text-slate-300 font-mono flex items-center gap-4 bg-slate-900/80 px-4 py-2 rounded-lg border border-slate-700 shadow-inner">
+                                        <span title="Сыграно / Всего" className="flex items-center gap-1.5"><span className="text-slate-500">Систем:</span> {globalStats.resolvedCount}/{globalStats.total}</span>
+                                        <span title="Общий профит/убыток по истории" className={`flex items-center gap-1.5 font-bold ${globalStats.totalProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                            <span className="text-slate-500 font-normal">P&L:</span> {globalStats.totalProfit > 0 ? '+' : ''}{formatUSD(globalStats.totalProfit, 2)}
+                                        </span>
+                                    </div>
+                                    <button onClick={() => {if(window.confirm('Очистить историю расчетов?')) setHistoryData([]);}} className="text-slate-500 hover:text-red-400 transition-colors p-2 rounded hover:bg-red-400/10" title="Очистить историю"><Trash2 size={18} /></button>
+                                </div>
+                            </div>
+                            
+                            <div className="p-0 overflow-x-auto max-h-[400px] overflow-y-auto custom-scrollbar">
+                                {historyData.length === 0 ? (
+                                    <div className="p-12 text-center text-slate-500 text-sm flex flex-col items-center gap-3">
+                                        <Save size={32} className="opacity-20"/>
+                                        Сохраняйте ваши расчеты из калькуляторов сюда.
+                                    </div>
+                                ) : (
+                                    <table className="w-full text-left border-collapse min-w-[800px]">
+                                        <thead>
+                                            <tr className="bg-slate-900/50 border-b border-slate-800 text-[10px] uppercase tracking-wider text-slate-500 sticky top-0 backdrop-blur-md z-10">
+                                                <th className="py-3 px-5 font-semibold w-24">Дата</th>
+                                                <th className="py-3 px-5 font-semibold w-40">Тип</th>
+                                                <th className="py-3 px-5 font-semibold">События</th>
+                                                <th className="py-3 px-5 font-semibold text-right">Сумма ставок</th>
+                                                <th className="py-3 px-5 font-semibold text-right">Потенц. Профит</th>
+                                                <th className="py-3 px-5 font-semibold text-center w-64">Результат</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-800/50">
+                                            {historyData.map(item => (
+                                                <tr key={item.id} className="hover:bg-slate-800/30 transition-colors group">
+                                                    <td className="py-3 px-5 text-[11px] text-slate-500 whitespace-nowrap font-mono">{item.date}</td>
+                                                    <td className="py-3 px-5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{item.strategy}</td>
+                                                    <td className="py-3 px-5 text-[11px] text-slate-300 leading-relaxed max-w-[250px] truncate" title={item.matches}>{item.matches}</td>
+                                                    <td className="py-3 px-5 text-right font-bold text-sm text-slate-300">{formatUSD(item.gameBank)}</td>
+                                                    <td className="py-3 px-5 text-right font-bold text-sm text-slate-100">+{formatUSD(item.netProfit)}</td>
+                                                    <td className="py-3 px-5">
+                                                        {item.status === 'PENDING' ? (
+                                                            <div className="flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <button onClick={() => resolveHistoryItem(item.id, 'WON_MAIN')} className="flex flex-1 items-center justify-center gap-1 bg-emerald-900/30 hover:bg-emerald-600 text-emerald-500 hover:text-white border border-emerald-800/50 px-2 py-1.5 rounded text-[10px] font-bold transition-all" title="Зашла основа (+ профит)"><CheckCircle size={14} /> Вин</button>
+                                                                {!item.strategy.includes('Матрёшка') && (
+                                                                    <button onClick={() => resolveHistoryItem(item.id, 'WON_INSURE')} className="flex flex-1 items-center justify-center gap-1 bg-slate-800 hover:bg-slate-600 text-slate-400 hover:text-white border border-slate-700 px-2 py-1.5 rounded text-[10px] font-bold transition-all" title="Зашла страховка (возврат)"><ShieldAlert size={14} /> Возврат</button>
+                                                                )}
+                                                                <button onClick={() => resolveHistoryItem(item.id, 'LOST')} className="flex flex-1 items-center justify-center gap-1 bg-red-900/30 hover:bg-red-600 text-red-500 hover:text-white border border-red-800/50 px-2 py-1.5 rounded text-[10px] font-bold transition-all" title="Слив (- банк)"><XCircle size={14} /> Слив</button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center justify-center w-full">
+                                                                {item.status === 'WON_MAIN' && <span className="w-full justify-center bg-emerald-900/20 text-emerald-400 border border-emerald-800/50 px-3 py-1.5 rounded text-[10px] font-bold flex items-center gap-1.5"><CheckCircle size={14}/> Победа (+{formatUSD(item.netProfit)})</span>}
+                                                                {item.status === 'WON_INSURE' && <span className="w-full justify-center bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1.5 rounded text-[10px] font-bold flex items-center gap-1.5"><ShieldAlert size={14}/> Возврат (0.00 $)</span>}
+                                                                {item.status === 'LOST' && <span className="w-full justify-center bg-red-900/20 text-red-400 border border-red-800/50 px-3 py-1.5 rounded text-[10px] font-bold flex items-center gap-1.5"><XCircle size={14}/> Слив (-{formatUSD(item.gameBank)})</span>}
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+                        </div>
+                    </>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
