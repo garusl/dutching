@@ -311,6 +311,16 @@
 
         const poolClampSeries = (n) => Math.min(POOL_MAX_SERIES, Math.max(POOL_MIN_SERIES, parseInt(n, 10) || POOL_DEFAULT_SERIES));
         const poolClampSteps = (n) => Math.min(POOL_MAX_STEPS, Math.max(POOL_MIN_STEPS, parseInt(n, 10) || POOL_DEFAULT_STEPS));
+        const poolShellBumpedSeries = (p, delta) => {
+            const cur = poolClampSeries(String(p.constructorSeries));
+            const next = poolClampSeries(String(cur + delta));
+            return { ...p, constructorSeries: next, constructorSteps: poolCalcStepsForDoubleGoal(next) };
+        };
+        const poolShellBumpedSteps = (p, delta) => {
+            const cur = poolClampSteps(String(p.constructorSteps));
+            const next = poolClampSteps(String(cur + delta));
+            return { ...p, constructorSteps: next };
+        };
         /** Минимум шагов в одной серии для цели x2 банка при минимальном кэфе 2.00 на каждом шаге. */
         const poolCalcStepsForDoubleGoal = (seriesCountRaw) => {
             const seriesCount = poolClampSeries(seriesCountRaw);
@@ -2566,6 +2576,8 @@
           const [expressLineDeletePrompt, setExpressLineDeletePrompt] = useState(null);
           /** Подтверждение массового удаления всех матчей из «Линия дня». */
           const [expressLineMassDeletePrompt, setExpressLineMassDeletePrompt] = useState(false);
+          /** Мобильная плашка: раскрытые доп.рынки (1X, 2X, тоталы) для матча `leagueId::matchId`. */
+          const [expressLineMobileExtraKey, setExpressLineMobileExtraKey] = useState(null);
           /** Ручные коэффициенты доп.рынков по ключу матча (1X, 2X, тоталы). */
           const [expressLineMarketsByMatch, setExpressLineMarketsByMatch] = useState({});
           /** Линия дня: по умолчанию два случайных матча ЧМ; дальше — матчи, добавленные вручную (полный демо-мок см. EXPRESS_LINE_DAY_MOCK). */
@@ -5655,34 +5667,76 @@
                                   <div className="flex flex-wrap items-center gap-3">
                                       <div>
                                           <label className="mb-0 block text-[12px] font-bold uppercase text-slate-500">Серий</label>
-                                          <input
-                                              type="number"
-                                              min={POOL_MIN_SERIES}
-                                              max={POOL_MAX_SERIES}
-                                              value={poolConstructorSeries}
-                                              onChange={(e) => {
-                                                  const nextSeries = poolClampSeries(e.target.value);
-                                                  poolUpdateActiveShell((p) => ({
-                                                      ...p,
-                                                      constructorSeries: nextSeries,
-                                                      constructorSteps: poolCalcStepsForDoubleGoal(nextSeries),
-                                                  }));
-                                              }}
-                                              className="h-7 w-16 rounded-md border border-cyan-700/45 bg-slate-950 px-1.5 text-base font-mono text-cyan-50"
-                                          />
+                                          <div className="flex items-stretch gap-0.5">
+                                              <button
+                                                  type="button"
+                                                  aria-label="Меньше серий"
+                                                  disabled={poolClampSeries(String(poolConstructorSeries)) <= POOL_MIN_SERIES}
+                                                  onClick={() => poolUpdateActiveShell((p) => poolShellBumpedSeries(p, -1))}
+                                                  className="flex h-7 w-8 shrink-0 touch-manipulation items-center justify-center rounded-l-md border border-cyan-700/50 bg-slate-900 text-lg font-black leading-none text-cyan-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+                                              >
+                                                  −
+                                              </button>
+                                              <input
+                                                  type="number"
+                                                  inputMode="numeric"
+                                                  min={POOL_MIN_SERIES}
+                                                  max={POOL_MAX_SERIES}
+                                                  value={poolConstructorSeries}
+                                                  onChange={(e) => {
+                                                      const nextSeries = poolClampSeries(e.target.value);
+                                                      poolUpdateActiveShell((p) => ({
+                                                          ...p,
+                                                          constructorSeries: nextSeries,
+                                                          constructorSteps: poolCalcStepsForDoubleGoal(nextSeries),
+                                                      }));
+                                                  }}
+                                                  className="h-7 w-11 min-w-0 flex-1 rounded-none border-y border-cyan-700/45 bg-slate-950 px-1 text-center text-base font-mono text-cyan-50 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                              />
+                                              <button
+                                                  type="button"
+                                                  aria-label="Больше серий"
+                                                  disabled={poolClampSeries(String(poolConstructorSeries)) >= POOL_MAX_SERIES}
+                                                  onClick={() => poolUpdateActiveShell((p) => poolShellBumpedSeries(p, 1))}
+                                                  className="flex h-7 w-8 shrink-0 touch-manipulation items-center justify-center rounded-r-md border border-cyan-700/50 bg-slate-900 text-lg font-black leading-none text-cyan-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+                                              >
+                                                  +
+                                              </button>
+                                          </div>
                                       </div>
                                       <div>
                                           <label className="mb-0 block text-[12px] font-bold uppercase text-slate-500">Шагов</label>
-                                          <input
-                                              type="number"
-                                              min={POOL_MIN_STEPS}
-                                              max={POOL_MAX_STEPS}
-                                              value={poolConstructorSteps}
-                                              onChange={(e) =>
-                                                  poolUpdateActiveShell((p) => ({ ...p, constructorSteps: poolClampSteps(e.target.value) }))
-                                              }
-                                              className="h-7 w-16 rounded-md border border-cyan-700/45 bg-slate-950 px-1.5 text-base font-mono text-cyan-50"
-                                          />
+                                          <div className="flex items-stretch gap-0.5">
+                                              <button
+                                                  type="button"
+                                                  aria-label="Меньше шагов"
+                                                  disabled={poolClampSteps(String(poolConstructorSteps)) <= POOL_MIN_STEPS}
+                                                  onClick={() => poolUpdateActiveShell((p) => poolShellBumpedSteps(p, -1))}
+                                                  className="flex h-7 w-8 shrink-0 touch-manipulation items-center justify-center rounded-l-md border border-cyan-700/50 bg-slate-900 text-lg font-black leading-none text-cyan-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+                                              >
+                                                  −
+                                              </button>
+                                              <input
+                                                  type="number"
+                                                  inputMode="numeric"
+                                                  min={POOL_MIN_STEPS}
+                                                  max={POOL_MAX_STEPS}
+                                                  value={poolConstructorSteps}
+                                                  onChange={(e) =>
+                                                      poolUpdateActiveShell((p) => ({ ...p, constructorSteps: poolClampSteps(e.target.value) }))
+                                                  }
+                                                  className="h-7 w-11 min-w-0 flex-1 rounded-none border-y border-cyan-700/45 bg-slate-950 px-1 text-center text-base font-mono text-cyan-50 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                              />
+                                              <button
+                                                  type="button"
+                                                  aria-label="Больше шагов"
+                                                  disabled={poolClampSteps(String(poolConstructorSteps)) >= POOL_MAX_STEPS}
+                                                  onClick={() => poolUpdateActiveShell((p) => poolShellBumpedSteps(p, 1))}
+                                                  className="flex h-7 w-8 shrink-0 touch-manipulation items-center justify-center rounded-r-md border border-cyan-700/50 bg-slate-900 text-lg font-black leading-none text-cyan-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+                                              >
+                                                  +
+                                              </button>
+                                          </div>
                                       </div>
                                       <p className="flex items-center text-[14px] leading-tight text-slate-400">
                                           Доля/серия{' '}
@@ -7298,6 +7352,8 @@
                                                       const w1n = parseFloat(w1Str);
                                                       const xn = parseFloat(xStr);
                                                       const w2n = parseFloat(w2Str);
+                                                      const mobileRowKey = `${league.id}::${m.id}`;
+                                                      const mobileExtraOpen = expressLineMobileExtraKey === mobileRowKey;
                                                       return (
                                                       <div
                                                           key={m.id}
@@ -7318,8 +7374,9 @@
                                                                   </div>
                                                               </div>
                                                           </div>
-                                                          <div className="flex min-w-0 max-w-full flex-1 basis-0 flex-nowrap items-center justify-start gap-1 overflow-x-auto overflow-y-visible px-2 pb-0 [-webkit-overflow-scrolling:touch] sm:min-w-0 sm:gap-1.5 sm:px-2.5 sm:pb-0">
-                                                              <div className="flex shrink-0 flex-col items-center gap-0.5">
+                                                          <div className="flex min-w-0 max-w-full flex-1 basis-0 flex-col gap-2 overflow-x-visible px-0 pb-0 sm:basis-0 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-start sm:gap-1.5 sm:overflow-x-auto sm:overflow-y-visible sm:px-2.5 sm:pb-0 [-webkit-overflow-scrolling:touch]">
+                                                              <div className="grid w-full min-w-0 grid-cols-3 gap-1.5 sm:contents">
+                                                              <div className="flex min-w-0 w-full flex-col items-center gap-0.5 sm:w-auto sm:shrink-0">
                                                                   <span className={`text-[9px] font-black tabular-nums sm:text-[10px] ${w1LabelTone}`}>1</span>
                                                                   <div
                                                                       className={`flex min-h-[2.35rem] min-w-[3.35rem] overflow-hidden rounded-lg border shadow-sm transition sm:min-h-[2.55rem] sm:min-w-[3.55rem] ${
@@ -7370,7 +7427,7 @@
                                                                       </div>
                                                                   </div>
                                                               </div>
-                                                              <div className="flex shrink-0 flex-col items-center gap-0.5">
+                                                              <div className="flex min-w-0 w-full flex-col items-center gap-0.5 sm:w-auto sm:shrink-0">
                                                                   <span className="text-[9px] font-black text-slate-400 sm:text-[10px]">X</span>
                                                                   <div
                                                                       className={`flex min-h-[2.35rem] min-w-[3.35rem] overflow-hidden rounded-lg border shadow-sm transition sm:min-h-[2.55rem] sm:min-w-[3.55rem] ${
@@ -7413,7 +7470,7 @@
                                                                       </div>
                                                                   </div>
                                                               </div>
-                                                              <div className="flex shrink-0 flex-col items-center gap-0.5">
+                                                              <div className="flex min-w-0 w-full flex-col items-center gap-0.5 sm:w-auto sm:shrink-0">
                                                                   <span className={`text-[9px] font-black sm:text-[10px] ${w2LabelTone}`}>2</span>
                                                                   <div
                                                                       className={`flex min-h-[2.35rem] min-w-[3.35rem] overflow-hidden rounded-lg border shadow-sm transition sm:min-h-[2.55rem] sm:min-w-[3.55rem] ${
@@ -7464,6 +7521,26 @@
                                                                       </div>
                                                                   </div>
                                                               </div>
+                                                              </div>
+                                                              <button
+                                                                  type="button"
+                                                                  className="w-full rounded-lg border border-fuchsia-500/35 bg-slate-900/90 py-2 text-center text-[11px] font-black uppercase tracking-wide text-fuchsia-100 shadow-sm transition hover:border-fuchsia-400/50 hover:bg-slate-800/90 sm:hidden"
+                                                                  onClick={() =>
+                                                                      setExpressLineMobileExtraKey(mobileExtraOpen ? null : mobileRowKey)
+                                                                  }
+                                                                  aria-expanded={mobileExtraOpen}
+                                                              >
+                                                                  {mobileExtraOpen
+                                                                      ? 'Свернуть: 1X · 2X · тоталы'
+                                                                      : '1X · 2X · тоталы ТБ/ТМ — открыть'}
+                                                              </button>
+                                                              <div
+                                                                  className={
+                                                                      mobileExtraOpen
+                                                                          ? 'flex w-full min-w-0 flex-wrap items-end justify-center gap-2 rounded-lg border border-slate-600/50 bg-slate-950/70 p-2 shadow-inner sm:contents sm:border-0 sm:bg-transparent sm:p-0'
+                                                                          : 'hidden sm:contents'
+                                                                  }
+                                                              >
                                                               {extraMarketLabels.map((lbl) => {
                                                                   const oddStr = getExpressLineExtraMarketOdd(lineMk, lbl, derivedExtra);
                                                                   const oddNum = parseFloat(oddStr);
@@ -7539,6 +7616,7 @@
                                                                       </div>
                                                                   );
                                                               })}
+                                                              </div>
                                                           </div>
                                                           {expressLineDeleteMode ? (
                                                               <div className="flex w-full flex-[0_0_auto] items-center justify-end sm:w-auto">
