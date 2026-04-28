@@ -492,16 +492,21 @@
 
         const HISTORY_TAB_KEYS = ['classic', 'totals', 'express'];
 
-        const POOL_DEFAULT_SERIES = 10;
-        const POOL_DEFAULT_STEPS = 4;
+        const POOL_DEFAULT_SERIES = 4;
+        const POOL_DEFAULT_STEPS = 3;
         const POOL_MIN_SERIES = 2;
         const POOL_MAX_SERIES = 24;
         const POOL_MIN_STEPS = 2;
         const POOL_MAX_STEPS = 8;
+        const POOL_MIN_BANK = 0;
+        const POOL_MAX_BANK = 999999;
+        const POOL_BANK_STEP = 50;
         const POOL_LS_SESSION = 'dutchingLadderPoolSession';
         const POOL_LS_HISTORY = 'dutchingLadderPoolHistory';
         const GLOBAL_HISTORY_LS_KEY = 'dutchingGlobalHistory';
         const LINE_STRATEGIES_DATA_LS_KEY = 'dutchingLineStrategiesData';
+        const MAIN_BANK_TOPUP_TOTAL_LS_KEY = 'dutchingMainBankTopupTotal';
+        const MAIN_BANK_WITHDRAW_TOTAL_LS_KEY = 'dutchingMainBankWithdrawTotal';
         const SUPABASE_URL = 'https://zougmxypkuafvtgmfblf.supabase.co';
         const SUPABASE_ANON_KEY =
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvdWdteHlwa3VhZnZ0Z21mYmxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzIzNDAsImV4cCI6MjA4OTQ0ODM0MH0.SFo1pEWBnWN__-A2kr7gJ7J5K_CI-h39SrI_3KSriC4';
@@ -526,6 +531,15 @@
             const cur = poolClampSteps(String(p.constructorSteps));
             const next = poolClampSteps(String(cur + delta));
             return { ...p, constructorSteps: next };
+        };
+        const poolClampBank = (raw) => {
+            const n = Math.floor(Math.abs(parseFloat(String(raw).replace(',', '.'))) || 0);
+            return Math.min(POOL_MAX_BANK, Math.max(POOL_MIN_BANK, n));
+        };
+        const poolShellBumpedBank = (p, delta) => {
+            const cur = poolClampBank(p.bankInput);
+            const next = poolClampBank(cur + delta * POOL_BANK_STEP);
+            return { ...p, bankInput: String(next) };
         };
         /** Минимум шагов в одной серии для цели x2 банка при минимальном кэфе 2.00 на каждом шаге. */
         const poolCalcStepsForDoubleGoal = (seriesCountRaw) => {
@@ -2706,6 +2720,21 @@
         function App() {
           // --- ГЛОБАЛЬНЫЙ СТЕЙТ ---
           const [mainBank, setMainBank] = useState(() => parseFloat(localStorage.getItem('dutchingMainBank')) || 1000);
+          const [mainBankSimAmount, setMainBankSimAmount] = useState('100');
+          const [mainBankTopupTotal, setMainBankTopupTotal] = useState(() => {
+              try {
+                  return poolMoney2(parseFloat(localStorage.getItem(MAIN_BANK_TOPUP_TOTAL_LS_KEY)) || 0);
+              } catch (e) {
+                  return 0;
+              }
+          });
+          const [mainBankWithdrawTotal, setMainBankWithdrawTotal] = useState(() => {
+              try {
+                  return poolMoney2(parseFloat(localStorage.getItem(MAIN_BANK_WITHDRAW_TOTAL_LS_KEY)) || 0);
+              } catch (e) {
+                  return 0;
+              }
+          });
           const [uiTheme, setUiTheme] = useState(() => {
               try {
                   return normalizeStoredUiTheme(localStorage.getItem('dutchingUiTheme'));
@@ -2754,6 +2783,16 @@
           historyByTabRef.current = historyByTab;
           const globalHistoryRef = useRef(globalHistory);
           globalHistoryRef.current = globalHistory;
+          const applyMainBankSimulation = (kind) => {
+              const amt = poolMoney2(parseFloat(String(mainBankSimAmount || '').replace(',', '.')) || 0);
+              if (!(amt > 0)) return;
+              const cur = poolMoney2(parseFloat(mainBank) || 0);
+              if (kind === 'withdraw' && amt > cur + 1e-9) return;
+              const next = kind === 'topup' ? poolMoney2(cur + amt) : poolMoney2(cur - amt);
+              setMainBank(next.toFixed(2));
+              if (kind === 'topup') setMainBankTopupTotal((v) => poolMoney2((Number(v) || 0) + amt));
+              else setMainBankWithdrawTotal((v) => poolMoney2((Number(v) || 0) + amt));
+          };
 
           // --- СОСТОЯНИЯ: КЛАССИКА ---
           const [classicCount, setClassicCount] = useState(3);
@@ -2787,6 +2826,8 @@
           const [expressLineDeletePrompt, setExpressLineDeletePrompt] = useState(null);
           /** Подтверждение массового удаления всех матчей из «Линия дня». */
           const [expressLineMassDeletePrompt, setExpressLineMassDeletePrompt] = useState(false);
+          /** Подтверждение очистки списка прогнозов/вариантов в конструкторе «Линия». */
+          const [expressWorkspaceClearPrompt, setExpressWorkspaceClearPrompt] = useState(false);
           /** Мобильная плашка: раскрытые доп.рынки (1X, 2X, тоталы) для матча `leagueId::matchId`. */
           const [expressLineMobileExtraKey, setExpressLineMobileExtraKey] = useState(null);
           /** Ручные коэффициенты доп.рынков по ключу матча (1X, 2X, тоталы). */
@@ -2849,6 +2890,12 @@
               setExpressLineDeleteMode(false);
               setExpressLineDeletePrompt(null);
               setExpressLineMassDeletePrompt(false);
+          };
+          const commitExpressWorkspaceClear = () => {
+              setExpressPicks([]);
+              setExpressBundles([]);
+              setExpressGenMessage('');
+              setExpressWorkspaceClearPrompt(false);
           };
           const openExpressBundleDeletePrompt = (bundleId) => {
               setExpressBundleDeletePrompt({ id: String(bundleId) });
@@ -3259,6 +3306,8 @@
               () => ({
                   v: 1,
                   mainBank,
+                  mainBankTopupTotal,
+                  mainBankWithdrawTotal,
                   uiTheme,
                   uiFontId,
                   bank,
@@ -3291,6 +3340,8 @@
               }),
               [
                   mainBank,
+                  mainBankTopupTotal,
+                  mainBankWithdrawTotal,
                   uiTheme,
                   uiFontId,
                   bank,
@@ -3341,6 +3392,8 @@
                       const rs = data.state;
                       remoteApplyingRef.current = true;
                       if (rs.mainBank != null) setMainBank(String(rs.mainBank));
+                      if (rs.mainBankTopupTotal != null) setMainBankTopupTotal(poolMoney2(Number(rs.mainBankTopupTotal) || 0));
+                      if (rs.mainBankWithdrawTotal != null) setMainBankWithdrawTotal(poolMoney2(Number(rs.mainBankWithdrawTotal) || 0));
                       if (rs.uiTheme != null) setUiTheme(normalizeStoredUiTheme(rs.uiTheme));
                       if (rs.uiFontId != null && FONT_PRESET_IDS.has(rs.uiFontId)) setUiFontId(rs.uiFontId);
                       if (rs.bank != null) setBank(Number(rs.bank) || 0);
@@ -3414,6 +3467,16 @@
 
           // Сохранение в LocalStorage
           useEffect(() => { localStorage.setItem('dutchingMainBank', mainBank); }, [mainBank]);
+          useEffect(() => {
+              try {
+                  localStorage.setItem(MAIN_BANK_TOPUP_TOTAL_LS_KEY, String(poolMoney2(mainBankTopupTotal)));
+              } catch (e) {}
+          }, [mainBankTopupTotal]);
+          useEffect(() => {
+              try {
+                  localStorage.setItem(MAIN_BANK_WITHDRAW_TOTAL_LS_KEY, String(poolMoney2(mainBankWithdrawTotal)));
+              } catch (e) {}
+          }, [mainBankWithdrawTotal]);
           useEffect(() => {
               try {
                   localStorage.setItem('dutchingUiTheme', uiTheme);
@@ -3807,31 +3870,41 @@
               );
               const totalsOnly = expressBundles.filter((b) => b.expressCategory === 'totals');
               const ordinaryOnly = expressBundles.filter((b) => b.expressCategory === 'ordinary');
+              const crazyMaxTotalsBundle =
+                  totalsOnly.length === 0
+                      ? null
+                      : totalsOnly.reduce((a, b) =>
+                            (Number(b.totalOdd) || 0) > (Number(a.totalOdd) || 0) ? b : a,
+                        );
+              const crazyTotalsRow = crazyMaxTotalsBundle
+                  ? [
+                        {
+                            ...crazyMaxTotalsBundle,
+                            id: `${String(crazyMaxTotalsBundle.id)}-crazy-totals`,
+                            expressCategory: 'crazy',
+                        },
+                    ]
+                  : [];
+              const crazyW12 = buildExpressCrazyWin12Ladder(expressPicks);
+              const crazySignatures = new Set(
+                  [...crazyTotalsRow, ...crazyW12]
+                      .map((b) => expressBundleSignature(b))
+                      .filter((sig) => sig && String(sig).trim().length > 0),
+              );
+              const totalsOnlyWithoutCrazy = totalsOnly.filter((b) => {
+                  const sig = expressBundleSignature(b);
+                  if (!sig) return true;
+                  return !crazySignatures.has(sig);
+              });
 
               let bundlesToSave = [];
               if (tab === 'all') {
                   bundlesToSave = expressBundlesSortedForAllTab(mainOnly);
               } else if (tab === 'totals') {
-                  bundlesToSave = expressBundlesSortedByConfidence(totalsOnly);
+                  bundlesToSave = expressBundlesSortedByConfidence(totalsOnlyWithoutCrazy);
               } else if (tab === 'ordinary') {
                   bundlesToSave = expressBundlesSortedByConfidence(ordinaryOnly);
               } else if (tab === 'crazy') {
-                  const crazyMaxTotalsBundle =
-                      totalsOnly.length === 0
-                          ? null
-                          : totalsOnly.reduce((a, b) =>
-                                (Number(b.totalOdd) || 0) > (Number(a.totalOdd) || 0) ? b : a,
-                            );
-                  const crazyTotalsRow = crazyMaxTotalsBundle
-                      ? [
-                            {
-                                ...crazyMaxTotalsBundle,
-                                id: `${String(crazyMaxTotalsBundle.id)}-crazy-totals`,
-                                expressCategory: 'crazy',
-                            },
-                        ]
-                      : [];
-                  const crazyW12 = buildExpressCrazyWin12Ladder(expressPicks);
                   bundlesToSave = [...crazyTotalsRow, ...crazyW12];
               }
 
@@ -5127,20 +5200,63 @@
                                           <p className="text-[10px] text-slate-600 leading-tight mt-0.5">Все разделы · ожидающие удерживают сумму серии</p>
                                       </div>
                                   </div>
-                                  <label htmlFor="main-bank-input" className="mt-3 block text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                                      Баланс в учёте ($)
-                                  </label>
-                                  <input
-                                      id="main-bank-input"
-                                      type="number"
-                                      step="0.01"
-                                      value={mainBank}
-                                      onChange={(e) => setMainBank(e.target.value)}
-                                      title="Сумма банка в учёте"
-                                      className="mt-1 w-full bg-transparent border-0 border-b-2 border-sky-500/40 text-white text-3xl sm:text-4xl font-black tabular-nums py-1 focus:border-sky-400/80 focus:ring-0 outline-none placeholder:text-slate-600"
-                                  />
-                                  <p className={`mt-3 text-2xl font-black tabular-nums leading-none ${liquidMainBank < 0 ? 'text-red-400' : 'text-emerald-300'}`}>{formatUSD(liquidMainBank, 2)}</p>
-                                  <p className="text-xs text-slate-500 mt-1">Доступный банк</p>
+                                  <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                      <div className="shrink-0 lg:min-w-[10rem]">
+                                          <p className={`text-3xl sm:text-4xl font-black tabular-nums leading-none ${liquidMainBank < 0 ? 'text-red-400' : 'text-emerald-300'}`}>{formatUSD(liquidMainBank, 2)}</p>
+                                          <p className="text-xs text-slate-500 mt-1">Доступный банк</p>
+                                          <p className="text-xs text-amber-400/95 mt-1 tabular-nums">
+                                              {held > 0 ? (
+                                                  <>В игре: {formatUSD(held, 2)}</>
+                                              ) : (
+                                                  <span className="text-slate-500">Не рассчитано</span>
+                                              )}
+                                          </p>
+                                      </div>
+                                      <div className="w-full rounded-lg border border-slate-700/70 bg-slate-950/45 p-2 sm:ml-auto sm:max-w-[22rem]">
+                                      <div className="flex items-center gap-2">
+                                          <input
+                                              type="number"
+                                              step="0.01"
+                                              min="0"
+                                              value={mainBankSimAmount}
+                                              onChange={(e) => setMainBankSimAmount(e.target.value)}
+                                              title="Сумма операции"
+                                              className="h-9 min-w-0 flex-1 rounded border border-slate-600 bg-slate-900/80 px-2.5 text-sm font-mono text-white"
+                                          />
+                                          <button
+                                              type="button"
+                                              onClick={() => applyMainBankSimulation('topup')}
+                                              className="h-9 rounded border border-emerald-600/60 bg-emerald-900/35 px-2.5 text-xs font-black uppercase tracking-wide text-emerald-200 hover:bg-emerald-900/55"
+                                          >
+                                              Пополнить
+                                          </button>
+                                          <button
+                                              type="button"
+                                              onClick={() => applyMainBankSimulation('withdraw')}
+                                              className="h-9 rounded border border-amber-600/60 bg-amber-900/35 px-2.5 text-xs font-black uppercase tracking-wide text-amber-100 hover:bg-amber-900/55"
+                                          >
+                                              Вывести
+                                          </button>
+                                      </div>
+                                      <div className="mt-2 grid grid-cols-3 gap-1 text-[10px] font-mono">
+                                          <div className="rounded border border-slate-700/60 bg-slate-900/60 px-1.5 py-1">
+                                              <p className="text-slate-500 uppercase tracking-wide">Завёл</p>
+                                              <p className="text-sm font-black text-emerald-300 tabular-nums">{formatUSD(mainBankTopupTotal, 2)}</p>
+                                          </div>
+                                          <div className="rounded border border-slate-700/60 bg-slate-900/60 px-1.5 py-1">
+                                              <p className="text-slate-500 uppercase tracking-wide">Вывел</p>
+                                              <p className="text-sm font-black text-amber-300 tabular-nums">{formatUSD(mainBankWithdrawTotal, 2)}</p>
+                                          </div>
+                                          <div className="rounded border border-slate-700/60 bg-slate-900/60 px-1.5 py-1">
+                                              <p className="text-slate-500 uppercase tracking-wide">Итого</p>
+                                              <p className={`text-sm font-black tabular-nums ${(mainBankTopupTotal - mainBankWithdrawTotal) >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
+                                                  {mainBankTopupTotal - mainBankWithdrawTotal > 0 ? '+' : ''}
+                                                  {formatUSD(poolMoney2(mainBankTopupTotal - mainBankWithdrawTotal), 2)}
+                                              </p>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  </div>
                                   {poolHomeBankAdjust !== 0 ? (
                                       <p className="text-[10px] text-slate-600 mt-1 leading-snug">
                                           С учётом P&L пула в общей истории:{' '}
@@ -5150,13 +5266,6 @@
                                           </span>
                                       </p>
                                   ) : null}
-                                  <p className="text-xs text-amber-400/95 mt-1 tabular-nums">
-                                      {held > 0 ? (
-                                          <>В игре: {formatUSD(held, 2)}</>
-                                      ) : (
-                                          <span className="text-slate-500">Не рассчитано</span>
-                                      )}
-                                  </p>
                               </div>
                               <div className="xl:col-span-9 flex flex-col gap-4 xl:pl-1">
                                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
@@ -5631,6 +5740,7 @@
               const poolDeadExpanded = activePool.deadExpanded || {};
               const inside = poolComputeInsideTotal(poolSession.series);
               const init = Number(poolSession.initialPoolBank) || 0;
+              const goal = poolMoney2(init * 2);
               const stN = poolSession.stepsCount || poolStepsLen(poolSession.series);
               const serN = poolSession.seriesCount || poolSession.series.length;
               const nextBetSlots = poolNextBetSlots(poolSession.series);
@@ -6102,27 +6212,24 @@
                                       Удалить
                                   </button>
                               </div>
-                              <div className="flex min-w-0 flex-1 basis-full items-center gap-1.5 sm:basis-auto sm:justify-end">
-                                  <label className="sr-only" htmlFor="pool-tab-name">
-                                      Имя пула
-                                  </label>
-                                  <input
-                                      id="pool-tab-name"
-                                      type="text"
-                                      value={activePool.name}
-                                      onChange={(e) => poolRenameActive(e.target.value)}
-                                      maxLength={48}
-                                      className="h-7 min-w-0 max-w-[11rem] flex-1 rounded-md border border-slate-600/80 bg-slate-950/90 px-2 text-base font-bold text-white placeholder:text-slate-600 sm:max-w-[14rem]"
-                                      placeholder="Имя пула"
-                                  />
-                              </div>
                           </div>
                       </div>
                       <div className="rounded-xl border border-teal-600/35 bg-gradient-to-b from-slate-900/92 to-slate-950/95 p-2.5 shadow-lg shadow-teal-950/25 backdrop-blur-md sm:p-3">
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                               <div className="flex min-w-0 items-center gap-2">
                                   <LadderPoolIcon size={17} className="shrink-0 text-teal-400" />
-                                  <h2 className="truncate text-xl font-black tracking-tight text-white">{activePool.name}</h2>
+                                  <label className="sr-only" htmlFor="pool-title-name">
+                                      Имя пула
+                                  </label>
+                                  <input
+                                      id="pool-title-name"
+                                      type="text"
+                                      value={activePool.name}
+                                      onChange={(e) => poolRenameActive(e.target.value)}
+                                      maxLength={48}
+                                      className="h-8 min-w-0 w-[8.5rem] sm:w-[12rem] rounded-md border border-slate-600/80 bg-slate-950/90 px-2 text-xl font-black tracking-tight text-white placeholder:text-slate-600"
+                                      placeholder="Имя пула"
+                                  />
                                   <span className="shrink-0 rounded-md border border-teal-500/35 bg-teal-950/50 px-1.5 py-0.5 font-mono text-[14px] font-bold text-teal-200/95">
                                       {serN}×{stN}
                                   </span>
@@ -6139,16 +6246,6 @@
                                   ) : null}
                               </div>
                               <div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
-                                  <div className="flex items-center gap-1">
-                                      <label className="text-[13px] font-bold uppercase tracking-wide text-slate-500">Банк</label>
-                                      <input
-                                          type="number"
-                                          step="1"
-                                          value={poolBankInput}
-                                          onChange={(e) => poolUpdateActiveShell((p) => ({ ...p, bankInput: e.target.value }))}
-                                          className="h-7 w-[4.5rem] rounded-md border border-slate-600/80 bg-slate-950 px-1.5 text-base font-mono text-white"
-                                      />
-                                  </div>
                                   <button
                                       type="button"
                                       onClick={poolStartNew}
@@ -6185,11 +6282,43 @@
                               </div>
                           </div>
                           <div className="mt-2 rounded-lg border border-cyan-500/30 bg-gradient-to-r from-cyan-950/45 via-slate-950/65 to-slate-950/50 px-2 py-1.5">
-                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                  <span className="flex w-full items-center text-[13px] font-black uppercase leading-none tracking-wide text-cyan-300/90 sm:w-auto sm:shrink-0">
-                                      Конструктор · к «Создать пул»
-                                  </span>
-                                  <div className="flex flex-wrap items-center gap-3">
+                              <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
+                                  <div>
+                                      <label className="mb-0 block text-[12px] font-bold uppercase text-slate-500">Банк</label>
+                                      <div className="flex items-stretch gap-0.5">
+                                          <button
+                                              type="button"
+                                              aria-label="Уменьшить банк"
+                                              disabled={poolClampBank(poolBankInput) <= POOL_MIN_BANK}
+                                              onClick={() => poolUpdateActiveShell((p) => poolShellBumpedBank(p, -1))}
+                                              className="flex h-7 w-8 shrink-0 touch-manipulation items-center justify-center rounded-l-md border border-cyan-700/50 bg-slate-900 text-lg font-black leading-none text-cyan-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+                                          >
+                                              −
+                                          </button>
+                                          <input
+                                              type="number"
+                                              inputMode="numeric"
+                                              min={POOL_MIN_BANK}
+                                              max={POOL_MAX_BANK}
+                                              step={1}
+                                              value={poolBankInput}
+                                              onChange={(e) =>
+                                                  poolUpdateActiveShell((p) => ({ ...p, bankInput: String(poolClampBank(e.target.value)) }))
+                                              }
+                                              className="h-7 w-[4.75rem] min-w-0 flex-1 rounded-none border-y border-cyan-700/45 bg-slate-950 px-1 text-center text-base font-mono text-cyan-50 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                          />
+                                          <button
+                                              type="button"
+                                              aria-label="Увеличить банк"
+                                              disabled={poolClampBank(poolBankInput) >= POOL_MAX_BANK}
+                                              onClick={() => poolUpdateActiveShell((p) => poolShellBumpedBank(p, 1))}
+                                              className="flex h-7 w-8 shrink-0 touch-manipulation items-center justify-center rounded-r-md border border-cyan-700/50 bg-slate-900 text-lg font-black leading-none text-cyan-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+                                          >
+                                              +
+                                          </button>
+                                      </div>
+                                  </div>
+                                  <div className="flex flex-wrap items-end gap-3">
                                       <div>
                                           <label className="mb-0 block text-[12px] font-bold uppercase text-slate-500">Серий</label>
                                           <div className="flex items-stretch gap-0.5">
@@ -6263,23 +6392,29 @@
                                               </button>
                                           </div>
                                       </div>
-                                      <p className="flex items-center text-[14px] leading-tight text-slate-400">
-                                          Доля/серия{' '}
-                                          <span className="font-mono font-bold text-white">
-                                              {Number(poolBankInput) > 0 && poolConstructorSeries > 0
-                                                  ? formatUSD(Number(poolBankInput) / poolConstructorSeries, 2)
-                                                  : '—'}
+                                      <div className="min-w-0">
+                                          <span className="mb-0 block text-[12px] font-bold uppercase tracking-wide text-slate-500">
+                                              Доля / серия
                                           </span>
-                                      </p>
+                                          <div className="flex h-7 min-w-[6.5rem] items-center justify-center rounded-md border border-cyan-700/40 bg-slate-950/80 px-2 tabular-nums">
+                                              <span className="text-[13px] font-mono font-bold text-cyan-50">
+                                                  {Number(poolBankInput) > 0 && poolConstructorSeries > 0
+                                                      ? formatUSD(Number(poolBankInput) / poolConstructorSeries, 2)
+                                                      : '—'}
+                                              </span>
+                                          </div>
+                                      </div>
                                   </div>
                               </div>
                           </div>
                           <div className="mt-2 rounded-lg border border-slate-700/50 bg-slate-950/60 px-2 py-1">
                               <div className="text-[14px] leading-tight text-slate-400 tabular-nums">
-                                  <span className="font-normal text-slate-500">Банк </span>
+                                  <span className="font-normal text-slate-500">банк </span>
                                   <strong className="font-mono text-white">{formatUSD(inside, 2)}</strong>
                                   <span className="font-normal text-slate-600"> / старт </span>
                                   <strong className="font-mono text-slate-300">{formatUSD(init, 2)}</strong>
+                                  <span className="font-normal text-slate-600"> / цель ≥ </span>
+                                  <strong className="font-mono text-emerald-300">{formatUSD(goal, 2)}</strong>
                               </div>
                           </div>
                       </div>
@@ -7023,18 +7158,8 @@
                   setExpressGenMessage(msgParts.join(' '));
               };
               const expressListTab = ['all', 'totals', 'crazy', 'ordinary'].includes(expressBundlesPage) ? expressBundlesPage : 'all';
-              /** На вкладке «Все» только основной конструктор; отдельные категории (Тотал/Ординар) не дублируются. */
-              const expressBundlesMainOnly = expressBundles.filter(
-                  (b) => b.expressCategory !== 'totals' && b.expressCategory !== 'ordinary',
-              );
-              const bundlesSorted =
-                  expressListTab === 'all'
-                      ? expressBundlesSortedForAllTab(expressBundlesMainOnly)
-                      : expressBundlesSortedByConfidence(expressBundles);
               const totalsOnlyForCrazy = expressBundles.filter((b) => b.expressCategory === 'totals');
               const ordinarySinglesOnly = expressBundles.filter((b) => b.expressCategory === 'ordinary');
-              const totalsShelves = buildTotalsShelves(totalsOnlyForCrazy);
-              const totalsBundleCount = totalsOnlyForCrazy.length;
               const ordinaryBundleCount = ordinarySinglesOnly.length;
               const crazyMaxTotalsBundle =
                   totalsOnlyForCrazy.length === 0
@@ -7053,6 +7178,36 @@
                     ]
                   : [];
               const crazyBundleCount = crazyTotalsViewRow.length + crazyWin12Ladder.length;
+              const totalsSignatures = new Set(
+                  totalsOnlyForCrazy
+                      .map((b) => expressBundleSignature(b))
+                      .filter((sig) => sig && String(sig).trim().length > 0),
+              );
+              const crazySignatures = new Set(
+                  [...crazyTotalsViewRow, ...crazyWin12Ladder]
+                      .map((b) => expressBundleSignature(b))
+                      .filter((sig) => sig && String(sig).trim().length > 0),
+              );
+              const totalsVisibleOnly = totalsOnlyForCrazy.filter((b) => {
+                  const sig = expressBundleSignature(b);
+                  if (!sig) return true;
+                  return !crazySignatures.has(sig);
+              });
+              const totalsShelves = buildTotalsShelves(totalsVisibleOnly);
+              const totalsBundleCount = totalsVisibleOnly.length;
+              /** На «Все» показываем только основной конструктор без дублей, уже вошедших в «Тотал» или «Crazy». */
+              const expressBundlesMainOnly = expressBundles.filter((b) => {
+                  if (b.expressCategory === 'totals' || b.expressCategory === 'ordinary') return false;
+                  const sig = expressBundleSignature(b);
+                  if (!sig) return true;
+                  if (totalsSignatures.has(sig)) return false;
+                  if (crazySignatures.has(sig)) return false;
+                  return true;
+              });
+              const bundlesSorted =
+                  expressListTab === 'all'
+                      ? expressBundlesSortedForAllTab(expressBundlesMainOnly)
+                      : expressBundlesSortedByConfidence(expressBundles);
               const expressSaveTabBundleCount =
                   expressListTab === 'all'
                       ? expressBundlesMainOnly.length
@@ -7067,7 +7222,7 @@
                   expressListTab === 'all'
                       ? bundlesSorted
                       : expressListTab === 'totals'
-                        ? totalsOnlyForCrazy
+                        ? totalsVisibleOnly
                         : expressListTab === 'ordinary'
                           ? ordinarySinglesOnly
                           : [];
@@ -7178,11 +7333,6 @@
                                       >
                                           {expressBundlePassPctLabel(b)}
                                       </span>
-                                      {b.isBelowTarget ? (
-                                          <span className="rounded border border-amber-300/35 bg-black/20 px-1.5 py-px text-xs font-black uppercase tracking-wide text-amber-100">
-                                              ниже цели
-                                          </span>
-                                      ) : null}
                                       <span className="font-mono font-black text-lg text-white tabular-nums">@ {b.totalOdd.toFixed(2)}</span>
                                   </div>
                               </div>
@@ -7377,7 +7527,7 @@
                           </summary>
                           <div className="border-t border-fuchsia-500/20 px-3 pb-3 pt-2 text-xs leading-relaxed text-fuchsia-100/95">
                               <b>Конструктор:</b> внесите прогнозы (матч, исход, кэф) и метки уверенности. По «Сгенерировать» собираются купоны из{' '}
-                              <span className="font-mono font-black">2–3</span> исходов с общим кэфом от <span className="font-mono font-black">1.8</span> (ниже 2.00 отмечаются как «ниже цели»).{' '}
+                              <span className="font-mono font-black">2–3</span> исходов с общим кэфом от <span className="font-mono font-black">1.8</span>.{' '}
                               В один экспресс не попадают два исхода одного матча, а один исход может повторяться в нескольких экспрессах (до 3 раз). Сначала в очередь якорей попадают пары «оба уверенных» с кэфом до 2.0, пары «уверенный + средний» с кэфом от 2.0 и тройки «два уверенных + средний» с кэфом от 2.0. Это эвристика, не прогноз вероятности.
                               <span className="mt-2 block text-fuchsia-200/80">
                                   <b>Линия дня:</b> клик по кэфу сразу добавляет исход в список прогнозов (метка по умолчанию «Средний» — её можно сменить в таблице ниже). Повторный клик по уже выбранному кэфу снимает прогноз. Ниже можно собрать матч вручную и отправить его в линию в нужный блок лиги.
@@ -8250,11 +8400,7 @@
                               </button>
                               <button
                                   type="button"
-                                  onClick={() => {
-                                      setExpressPicks([]);
-                                      setExpressBundles([]);
-                                      setExpressGenMessage('');
-                                  }}
+                                  onClick={() => setExpressWorkspaceClearPrompt(true)}
                                   className="rounded-xl border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2.5 text-sm font-bold transition-colors"
                               >
                                   Очистить всё
@@ -8366,7 +8512,7 @@
                                   <Zap size={20} className="text-violet-300" /> Варианты экспрессов
                               </h3>
                               {[
-                                  { id: 'all', label: `Все (${expressBundlesMainOnly.length})` },
+                                  { id: 'all', label: `Экспрессы (${expressBundlesMainOnly.length})` },
                                   { id: 'totals', label: `Тотал (${totalsBundleCount})` },
                                   { id: 'ordinary', label: `Ординар (${ordinaryBundleCount})` },
                                   { id: 'crazy', label: `Crazy (${crazyBundleCount})` },
@@ -9303,6 +9449,46 @@
                                   onClick={commitExpressLineMassDelete}
                               >
                                   Удалить все
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              ) : null}
+
+              {expressWorkspaceClearPrompt ? (
+                  <div
+                      className="fixed inset-0 z-[206] flex items-center justify-center overflow-y-auto p-4 bg-black/75"
+                      role="dialog"
+                      aria-modal="true"
+                      aria-labelledby="express-workspace-clear-title"
+                      onClick={(e) => {
+                          if (e.target === e.currentTarget) setExpressWorkspaceClearPrompt(false);
+                      }}
+                  >
+                      <div
+                          className="w-full max-w-md max-h-[min(90dvh_calc(100dvh_-_2rem))] overflow-y-auto overscroll-contain rounded-2xl border border-red-500/40 bg-slate-900 p-5 shadow-2xl shadow-black/50"
+                          onClick={(e) => e.stopPropagation()}
+                      >
+                          <h3 id="express-workspace-clear-title" className="text-lg font-black text-white tracking-tight">
+                              Очистить все прогнозы?
+                          </h3>
+                          <p className="mt-2 text-sm text-slate-300 leading-relaxed">
+                              Будут удалены все прогнозы и сгенерированные варианты экспрессов в текущем блоке «Линия».
+                          </p>
+                          <div className="mt-6 flex flex-wrap justify-end gap-2">
+                              <button
+                                  type="button"
+                                  className="rounded-xl border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm font-bold text-slate-200 hover:bg-slate-700 transition-colors"
+                                  onClick={() => setExpressWorkspaceClearPrompt(false)}
+                              >
+                                  Отмена
+                              </button>
+                              <button
+                                  type="button"
+                                  className="rounded-xl border border-red-500/60 bg-red-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-500 transition-colors"
+                                  onClick={commitExpressWorkspaceClear}
+                              >
+                                  Очистить всё
                               </button>
                           </div>
                       </div>
