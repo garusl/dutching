@@ -2597,6 +2597,9 @@
           const [lineStrategyPickEditId, setLineStrategyPickEditId] = useState(null);
           /** Подтверждение удаления прогноза «Линия» (корзина). */
           const [lineStrategyPickDeletePrompt, setLineStrategyPickDeletePrompt] = useState(null);
+          /** Фильтры общей ленты на «Главная»: прогнозы стратегий «Линия». */
+          const [homeLineFeedStrategyId, setHomeLineFeedStrategyId] = useState('all');
+          const [homeLineFeedStatus, setHomeLineFeedStatus] = useState('all');
 
           const removeMatchFromExpressLine = (leagueId, matchId) => {
               const matchKey = `${leagueId}::${matchId}`;
@@ -3834,6 +3837,169 @@
               express: { title: 'Линия', desc: 'Линия дня и варианты купонов', grad: 'from-fuchsia-600 to-rose-600', ring: 'ring-fuchsia-500/30', border: 'border-fuchsia-600/40' },
           };
 
+          const renderLineStrategyPickFeedRow = (p) => {
+              const stratName =
+                  (lineStrategiesData.strategies || []).find((ss) => String(ss.id) === String(p.strategyId))?.name || '—';
+              const statusShort =
+                  p.status === 'PENDING'
+                      ? 'Ожидает'
+                      : p.status === 'WON'
+                        ? 'Вин'
+                        : p.status === 'LOST'
+                          ? 'Слив'
+                          : p.status === 'RETURN'
+                            ? 'Возвр.'
+                            : String(p.status || '');
+              const settledRowClass =
+                  p.status === 'WON'
+                      ? 'bg-emerald-950/70 ring-1 ring-inset ring-emerald-600/30'
+                      : p.status === 'LOST'
+                        ? 'bg-red-950/65 ring-1 ring-inset ring-red-600/30'
+                        : p.status === 'RETURN'
+                          ? 'bg-slate-700/35 ring-1 ring-inset ring-slate-500/35'
+                          : '';
+              return (
+                  <li key={`line-lenta-${p.id}`} className={`px-3 py-2.5 text-sm rounded-sm ${settledRowClass}`.trim()}>
+                      <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                          <span
+                              className="max-w-[min(100%,14rem)] truncate rounded border border-violet-500/45 bg-violet-950/40 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-100/95"
+                              title={stratName}
+                          >
+                              {stratName}
+                          </span>
+                          <span
+                              className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+                                  p.status === 'PENDING'
+                                      ? 'border border-amber-700/40 bg-amber-950/35 text-amber-200'
+                                      : 'border border-slate-600/60 bg-slate-800/60 text-slate-300'
+                              }`}
+                          >
+                              {statusShort}
+                          </span>
+                      </div>
+                      <div className="flex flex-wrap items-start justify-between gap-1.5">
+                          <span className="text-slate-500 font-mono text-xs sm:text-sm min-w-0 break-all sm:break-normal">{p.savedAt}</span>
+                          <div className="flex shrink-0 items-center gap-1">
+                              <span className="font-mono font-bold text-slate-200 text-right">
+                                  {formatUSD(p.stake, 2)} · @{Number(p.bundle.totalOdd).toFixed(2)}
+                              </span>
+                              {p.status !== 'PENDING' ? (
+                                  <>
+                                      <button
+                                          type="button"
+                                          title="Изменить результат"
+                                          onClick={() =>
+                                              setLineStrategyPickEditId((id) => (id != null && String(id) === String(p.id) ? null : p.id))
+                                          }
+                                          className={`inline-flex items-center justify-center rounded border p-1 transition-colors ${
+                                              lineStrategyPickEditId != null && String(lineStrategyPickEditId) === String(p.id)
+                                                  ? 'border-amber-500/60 bg-amber-950/40 text-amber-200'
+                                                  : 'border-slate-600 bg-slate-800/80 text-slate-400 hover:border-amber-600/50 hover:text-amber-200'
+                                          }`}
+                                      >
+                                          <HistoryEditPencil size={13} className="pointer-events-none" />
+                                      </button>
+                                      <button
+                                          type="button"
+                                          title="Удалить прогноз"
+                                          onClick={() => setLineStrategyPickDeletePrompt({ pickId: p.id })}
+                                          className="inline-flex items-center justify-center rounded border border-slate-600 bg-slate-800/80 p-1 text-slate-400 transition-colors hover:border-red-700/50 hover:text-red-400"
+                                      >
+                                          <Trash2 size={13} className="pointer-events-none opacity-90" aria-hidden />
+                                      </button>
+                                  </>
+                              ) : null}
+                          </div>
+                      </div>
+                      <div
+                          className="mt-1 text-xs leading-relaxed text-slate-400"
+                          title={(p.bundle.legs || []).map((l) => `${l.match}: ${l.prediction}`).join(' · ')}
+                      >
+                          <ul className="list-none space-y-1 break-words">
+                              {(p.bundle.legs || []).map((l, li) => (
+                                  <li key={li} className="border-b border-slate-700/40 pb-1 last:border-b-0 last:pb-0">
+                                      <span className="font-semibold text-slate-300">{l.match}</span>
+                                      <span className="text-slate-600">: </span>
+                                      <span>{expressFormatPredictionTotalDisplaySpacing(l.prediction)}</span>
+                                      <span className="ml-1 font-mono text-slate-500">@{Number(l.odd).toFixed(2)}</span>
+                                  </li>
+                              ))}
+                          </ul>
+                      </div>
+                      {p.status === 'PENDING' ? (
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                              <button
+                                  type="button"
+                                  onClick={() => settleLineStrategyPick(p.id, 'WIN')}
+                                  className="inline-flex items-center gap-0.5 rounded border border-emerald-700/50 bg-emerald-950/40 px-1.5 py-0.5 text-xs font-bold text-emerald-300"
+                              >
+                                  <CheckCircle size={12} /> Вин
+                              </button>
+                              <button
+                                  type="button"
+                                  onClick={() => settleLineStrategyPick(p.id, 'RETURN')}
+                                  className="inline-flex items-center gap-0.5 rounded border border-slate-600 bg-slate-800 px-1.5 py-0.5 text-xs font-bold text-slate-300"
+                              >
+                                  <ShieldAlert size={12} /> Возвр.
+                              </button>
+                              <button
+                                  type="button"
+                                  onClick={() => settleLineStrategyPick(p.id, 'LOST')}
+                                  className="inline-flex items-center gap-0.5 rounded border border-red-800/50 bg-red-950/35 px-1.5 py-0.5 text-xs font-bold text-red-300"
+                              >
+                                  <XCircle size={12} /> Слив
+                              </button>
+                              <button
+                                  type="button"
+                                  title="Удалить прогноз из стратегии"
+                                  aria-label="Удалить прогноз из стратегии"
+                                  onClick={() => setLineStrategyPickDeletePrompt({ pickId: p.id })}
+                                  className="ml-auto inline-flex items-center justify-center rounded border border-red-800/50 bg-red-950/35 p-1.5 text-red-300/95 transition hover:border-red-600/60 hover:bg-red-950/55 hover:text-red-100"
+                              >
+                                  <Trash2 size={14} className="pointer-events-none shrink-0 opacity-95" aria-hidden />
+                              </button>
+                          </div>
+                      ) : lineStrategyPickEditId != null && String(lineStrategyPickEditId) === String(p.id) ? (
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                              <button
+                                  type="button"
+                                  onClick={() => changeLineStrategyPickOutcome(p.id, 'WIN')}
+                                  className={`inline-flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-xs font-bold ${
+                                      p.status === 'WON'
+                                          ? 'border-emerald-400/70 bg-emerald-900/50 text-emerald-200'
+                                          : 'border-emerald-700/50 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-900/50'
+                                  }`}
+                              >
+                                  Вин
+                              </button>
+                              <button
+                                  type="button"
+                                  onClick={() => changeLineStrategyPickOutcome(p.id, 'RETURN')}
+                                  className={`inline-flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-xs font-bold ${
+                                      p.status === 'RETURN'
+                                          ? 'border-slate-400/60 bg-slate-700/60 text-slate-100'
+                                          : 'border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700'
+                                  }`}
+                              >
+                                  Возврат
+                              </button>
+                              <button
+                                  type="button"
+                                  onClick={() => changeLineStrategyPickOutcome(p.id, 'LOST')}
+                                  className={`inline-flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-xs font-bold ${
+                                      p.status === 'LOST'
+                                          ? 'border-red-400/70 bg-red-900/45 text-red-100'
+                                          : 'border-red-800/50 bg-red-950/35 text-red-300 hover:bg-red-900/45'
+                                  }`}
+                              >
+                                  Слив
+                              </button>
+                          </div>
+                      ) : null}
+                  </li>
+              );
+          };
+
           const renderHistoryPanel = (tabKey, { isGlobal = false } = {}) => {
               let rows = [];
               if (isGlobal) {
@@ -3858,16 +4024,26 @@
               const showExpressCtorSummary = !!expressCtorStats;
               const sectionMeta = !isGlobal ? SECTION_META[tabKey] : null;
               const colSpan = isGlobal ? 8 : 7;
+              const globalLinePicksFiltered = isGlobal
+                  ? (lineStrategiesData.picks || [])
+                        .filter((p) => {
+                            if (homeLineFeedStrategyId !== 'all' && String(p.strategyId) !== String(homeLineFeedStrategyId)) return false;
+                            if (homeLineFeedStatus === 'PENDING' && p.status !== 'PENDING') return false;
+                            if (homeLineFeedStatus === 'SETTLED' && p.status === 'PENDING') return false;
+                            return true;
+                        })
+                        .sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0))
+                  : [];
               return (
                   <div className={`bg-slate-900/80 border border-slate-700/80 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl ${isGlobal ? 'mt-0' : 'mt-8'}`}>
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-800 px-5 py-4 border-b border-slate-700/50 gap-3">
                           <div className="flex items-center gap-2 min-w-0">
                               <HistoryIcon size={20} className="text-slate-400 shrink-0" />
                               <div className="min-w-0">
-                                  <h2 className="text-white font-bold uppercase tracking-wider text-sm">{isGlobal ? 'Общая история' : 'История расчётов'}</h2>
+                                  <h2 className="text-white font-bold uppercase tracking-wider text-sm">{isGlobal ? 'Общая лента' : 'История расчётов'}</h2>
                                   <p className="text-[10px] text-slate-500 font-semibold truncate">
                                       {isGlobal
-                                          ? 'Экспрессы, тоталы и снимки «Пул лесенок»; «Линия» — только на своей вкладке'
+                                          ? 'Прогнозы «Линия» (фильтры ниже) + сохранённые серии: датчинг, тоталы, пул'
                                           : sectionMeta
                                             ? `${sectionMeta.title} · только этот раздел`
                                             : `${tabKey} · только этот раздел`}
@@ -3965,15 +4141,61 @@
                               </div>
                           </div>
                       </div>
-                      <div className="p-0 max-w-full min-w-0 overflow-x-hidden max-h-[480px] overflow-y-auto custom-scrollbar">
-                          {list.length === 0 ? (
+                      <div className="p-0 max-w-full min-w-0 overflow-x-hidden max-h-[520px] overflow-y-auto custom-scrollbar">
+                          {isGlobal ? (
+                              <>
+                                  <div className="border-b border-slate-700/50 bg-slate-950/30 px-3 py-3 sm:px-4">
+                                      <div className="flex flex-wrap items-end gap-3 mb-2">
+                                          <label className="flex flex-col gap-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                                              Стратегия
+                                              <select
+                                                  value={homeLineFeedStrategyId}
+                                                  onChange={(e) => setHomeLineFeedStrategyId(e.target.value)}
+                                                  className="mt-0.5 rounded-lg border border-slate-600 bg-slate-900 px-2 py-1.5 text-xs font-medium text-white min-w-[10rem]"
+                                              >
+                                                  <option value="all">Все стратегии</option>
+                                                  {(lineStrategiesData.strategies || []).map((s) => (
+                                                      <option key={s.id} value={s.id}>
+                                                          {s.name}
+                                                      </option>
+                                                  ))}
+                                              </select>
+                                          </label>
+                                          <label className="flex flex-col gap-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                                              Статус
+                                              <select
+                                                  value={homeLineFeedStatus}
+                                                  onChange={(e) => setHomeLineFeedStatus(e.target.value)}
+                                                  className="mt-0.5 rounded-lg border border-slate-600 bg-slate-900 px-2 py-1.5 text-xs font-medium text-white min-w-[8rem]"
+                                              >
+                                                  <option value="all">Все</option>
+                                                  <option value="PENDING">Ожидают</option>
+                                                  <option value="SETTLED">Завершены</option>
+                                              </select>
+                                          </label>
+                                      </div>
+                                      {globalLinePicksFiltered.length === 0 ? (
+                                          <p className="rounded-lg border border-dashed border-slate-700/80 bg-slate-900/40 px-3 py-4 text-center text-xs text-slate-500">
+                                              Нет прогнозов «Линия» по выбранным фильтрам.
+                                          </p>
+                                      ) : (
+                                          <ul className="max-h-[220px] overflow-y-auto custom-scrollbar divide-y divide-slate-800/60 rounded-lg border border-slate-800/80 bg-slate-900/40">
+                                              {globalLinePicksFiltered.map((p) => renderLineStrategyPickFeedRow(p))}
+                                          </ul>
+                                      )}
+                                      <p className="mt-3 pt-2 border-t border-slate-800/60 text-[10px] font-black uppercase tracking-wide text-slate-500">
+                                          Датчинг · тоталы · пул — таблица ниже
+                                      </p>
+                                  </div>
+                              </>
+                          ) : null}
+                          {!isGlobal && list.length === 0 ? (
                               <div className="p-12 text-center text-slate-500 text-sm flex flex-col items-center gap-3">
                                   <Save size={32} className="opacity-20" />
-                                  {isGlobal
-                                      ? 'Сводная лента: экспрессы (датчинг), тоталы и снимки пула (иконка у строки в «Пул лесенок»). Серии «Линия» — только на вкладке «Линия».'
-                                      : 'Сохраняйте расчёты из этого раздела — они появятся здесь.'}
+                                  Сохраняйте расчёты из этого раздела — они появятся здесь.
                               </div>
-                          ) : (
+                          ) : null}
+                          {list.length > 0 ? (
                               <table className="w-full table-fixed border-collapse text-left">
                                   <thead>
                                       <tr className="bg-slate-900/50 border-b border-slate-800 text-[10px] uppercase tracking-wider text-slate-500 sticky top-0 backdrop-blur-md z-10">
@@ -4350,7 +4572,12 @@
                                       })}
                                   </tbody>
                               </table>
-                          )}
+                          ) : isGlobal ? (
+                              <div className="p-8 text-center text-slate-500 text-sm flex flex-col items-center gap-2">
+                                  <Save size={28} className="opacity-20" />
+                                  В общей ленте пока нет сохранённых серий (датчинг, тоталы, пул). Добавьте их из разделов или сохраните расчёт.
+                              </div>
+                          ) : null}
                       </div>
                   </div>
               );
@@ -4676,154 +4903,9 @@
                                                       </div>
                                                   </div>
                                               </div>
-                                              <details className="mt-2.5 group/strat rounded-md border border-slate-700/60 bg-slate-900/50">
-                                                  <summary className="cursor-pointer list-none px-2 py-2 text-sm font-bold uppercase tracking-wide text-slate-400 hover:text-slate-200 [&::-webkit-details-marker]:hidden flex items-center justify-between gap-1">
-                                                      <span className="truncate">Прогнозы ({sum.total})</span>
-                                                      <ChevronDown size={16} className="shrink-0 text-slate-500 transition-transform group-open/strat:rotate-180" />
-                                                  </summary>
-                                                  <ul className="max-h-52 overflow-y-auto custom-scrollbar border-t border-slate-800/80 divide-y divide-slate-800/60 text-sm">
-                                                      {sum.picks.length === 0 ? (
-                                                          <li className="px-2 py-2 text-sm text-slate-500">Пока нет купонов.</li>
-                                                      ) : (
-                                                          <>
-                                                              {sum.picks.map((p) => {
-                                                                  const settledRowClass =
-                                                                      p.status === 'WON'
-                                                                          ? 'bg-emerald-950/70 ring-1 ring-inset ring-emerald-600/30'
-                                                                          : p.status === 'LOST'
-                                                                            ? 'bg-red-950/65 ring-1 ring-inset ring-red-600/30'
-                                                                            : p.status === 'RETURN'
-                                                                              ? 'bg-slate-700/35 ring-1 ring-inset ring-slate-500/35'
-                                                                              : '';
-                                                                  return (
-                                                                      <li
-                                                                          key={p.id}
-                                                                          className={`px-2 py-2 text-sm rounded-sm ${settledRowClass}`.trim()}
-                                                                      >
-                                                                          <div className="flex flex-wrap items-start justify-between gap-1.5">
-                                                                              <span className="text-slate-500 font-mono text-xs sm:text-sm min-w-0 break-all sm:break-normal">
-                                                                                  {p.savedAt}
-                                                                              </span>
-                                                                              <div className="flex shrink-0 items-center gap-1">
-                                                                                  <span className="font-mono font-bold text-slate-200 text-right">
-                                                                                      {formatUSD(p.stake, 2)} · @{Number(p.bundle.totalOdd).toFixed(2)}
-                                                                                  </span>
-                                                                                  {p.status !== 'PENDING' ? (
-                                                                                      <>
-                                                                                          <button
-                                                                                              type="button"
-                                                                                              title="Изменить результат"
-                                                                                              onClick={() =>
-                                                                                                  setLineStrategyPickEditId((id) =>
-                                                                                                      id != null && String(id) === String(p.id) ? null : p.id,
-                                                                                                  )
-                                                                                              }
-                                                                                              className={`inline-flex items-center justify-center rounded border p-1 transition-colors ${
-                                                                                                  lineStrategyPickEditId != null && String(lineStrategyPickEditId) === String(p.id)
-                                                                                                      ? 'border-amber-500/60 bg-amber-950/40 text-amber-200'
-                                                                                                      : 'border-slate-600 bg-slate-800/80 text-slate-400 hover:border-amber-600/50 hover:text-amber-200'
-                                                                                              }`}
-                                                                                          >
-                                                                                              <HistoryEditPencil size={13} className="pointer-events-none" />
-                                                                                          </button>
-                                                                                          <button
-                                                                                              type="button"
-                                                                                              title="Удалить прогноз"
-                                                                                              onClick={() => setLineStrategyPickDeletePrompt({ pickId: p.id })}
-                                                                                              className="inline-flex items-center justify-center rounded border border-slate-600 bg-slate-800/80 p-1 text-slate-400 transition-colors hover:border-red-700/50 hover:text-red-400"
-                                                                                          >
-                                                                                              <Trash2 size={13} className="pointer-events-none opacity-90" aria-hidden />
-                                                                                          </button>
-                                                                                      </>
-                                                                                  ) : null}
-                                                                              </div>
-                                                                          </div>
-                                                                          <div
-                                                                              className="mt-1 text-xs text-slate-400 truncate"
-                                                                              title={(p.bundle.legs || []).map((l) => l.match).join(' · ')}
-                                                                          >
-                                                                              {(p.bundle.legs || [])
-                                                                                  .slice(0, 2)
-                                                                                  .map((l) => `${l.match}: ${l.prediction}`)
-                                                                                  .join(' · ')}
-                                                                              {(p.bundle.legs || []).length > 2 ? '…' : ''}
-                                                                          </div>
-                                                                          {p.status === 'PENDING' ? (
-                                                                              <div className="mt-1.5 flex flex-wrap gap-1">
-                                                                                  <button
-                                                                                      type="button"
-                                                                                      onClick={() => settleLineStrategyPick(p.id, 'WIN')}
-                                                                                      className="inline-flex items-center gap-0.5 rounded border border-emerald-700/50 bg-emerald-950/40 px-1.5 py-0.5 text-xs font-bold text-emerald-300"
-                                                                                  >
-                                                                                      <CheckCircle size={12} /> Вин
-                                                                                  </button>
-                                                                                  <button
-                                                                                      type="button"
-                                                                                      onClick={() => settleLineStrategyPick(p.id, 'RETURN')}
-                                                                                      className="inline-flex items-center gap-0.5 rounded border border-slate-600 bg-slate-800 px-1.5 py-0.5 text-xs font-bold text-slate-300"
-                                                                                  >
-                                                                                      <ShieldAlert size={12} /> Возвр.
-                                                                                  </button>
-                                                                                  <button
-                                                                                      type="button"
-                                                                                      onClick={() => settleLineStrategyPick(p.id, 'LOST')}
-                                                                                      className="inline-flex items-center gap-0.5 rounded border border-red-800/50 bg-red-950/35 px-1.5 py-0.5 text-xs font-bold text-red-300"
-                                                                                  >
-                                                                                      <XCircle size={12} /> Слив
-                                                                                  </button>
-                                                                                  <button
-                                                                                      type="button"
-                                                                                      title="Удалить прогноз из стратегии (нужно подтверждение)"
-                                                                                      onClick={() => setLineStrategyPickDeletePrompt({ pickId: p.id })}
-                                                                                      className="ml-auto rounded border border-red-800/45 bg-red-950/30 px-2 py-1 text-xs font-black uppercase tracking-wide text-red-200/95 transition hover:border-red-600/55 hover:bg-red-950/50 hover:text-red-100"
-                                                                                  >
-                                                                                      Удалить
-                                                                                  </button>
-                                                                              </div>
-                                                                          ) : lineStrategyPickEditId != null && String(lineStrategyPickEditId) === String(p.id) ? (
-                                                                              <div className="mt-1.5 flex flex-wrap gap-1">
-                                                                                  <button
-                                                                                      type="button"
-                                                                                      onClick={() => changeLineStrategyPickOutcome(p.id, 'WIN')}
-                                                                                      className={`inline-flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-xs font-bold ${
-                                                                                          p.status === 'WON'
-                                                                                              ? 'border-emerald-400/70 bg-emerald-900/50 text-emerald-200'
-                                                                                              : 'border-emerald-700/50 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-900/50'
-                                                                                      }`}
-                                                                                  >
-                                                                                      Вин
-                                                                                  </button>
-                                                                                  <button
-                                                                                      type="button"
-                                                                                      onClick={() => changeLineStrategyPickOutcome(p.id, 'RETURN')}
-                                                                                      className={`inline-flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-xs font-bold ${
-                                                                                          p.status === 'RETURN'
-                                                                                              ? 'border-slate-400/60 bg-slate-700/60 text-slate-100'
-                                                                                              : 'border-slate-600 bg-slate-800 text-slate-300 hover:bg-slate-700'
-                                                                                      }`}
-                                                                                  >
-                                                                                      Возврат
-                                                                                  </button>
-                                                                                  <button
-                                                                                      type="button"
-                                                                                      onClick={() => changeLineStrategyPickOutcome(p.id, 'LOST')}
-                                                                                      className={`inline-flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-xs font-bold ${
-                                                                                          p.status === 'LOST'
-                                                                                              ? 'border-red-400/70 bg-red-900/45 text-red-100'
-                                                                                              : 'border-red-800/50 bg-red-950/35 text-red-300 hover:bg-red-900/45'
-                                                                                      }`}
-                                                                                  >
-                                                                                      Слив
-                                                                                  </button>
-                                                                              </div>
-                                                                          ) : null}
-                                                                      </li>
-                                                                  );
-                                                              })}
-                                                          </>
-                                                      )}
-                                                  </ul>
-                                              </details>
+                                              <p className="mt-2.5 rounded-md border border-slate-700/50 bg-slate-900/40 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                                  Прогнозов: {sum.total}. Список и действия — в блоке «Общая лента» ниже (фильтры по стратегии и статусу).
+                                              </p>
                                           </div>
                                       );
                                   })}
