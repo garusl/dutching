@@ -18,6 +18,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         html { overflow-x: hidden; }
@@ -30,7 +31,7 @@
         [data-app-theme="day"] .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.85); }
         [data-app-theme="day"] .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.95); }
 
-        /* Светлая тема: карточки и панели поверх тёмных utility-классов Tailwind */
+        /* Светло-серая тема: единые нейтральные тона поверх utility-классов Tailwind */
         [data-app-theme="day"] .bg-slate-950,
         [data-app-theme="day"] .bg-slate-950\/90,
         [data-app-theme="day"] .bg-slate-950\/80,
@@ -59,12 +60,12 @@
         [data-app-theme="day"] .bg-slate-800\/60,
         [data-app-theme="day"] .bg-slate-800\/50,
         [data-app-theme="day"] .bg-slate-800\/40 {
-            background-color: rgba(255, 255, 255, 0.92) !important;
+            background-color: rgba(243, 244, 246, 0.96) !important;
         }
         [data-app-theme="day"] .bg-slate-950\/15,
         [data-app-theme="day"] .bg-slate-900\/15,
         [data-app-theme="day"] .bg-slate-900\/20 {
-            background-color: rgba(241, 245, 249, 0.95) !important;
+            background-color: rgba(229, 231, 235, 0.95) !important;
         }
         [data-app-theme="day"] .border-slate-800,
         [data-app-theme="day"] .border-slate-800\/80,
@@ -81,36 +82,226 @@
         [data-app-theme="day"] .border-slate-600\/80,
         [data-app-theme="day"] .border-slate-600\/70,
         [data-app-theme="day"] .border-slate-600\/50 {
-            border-color: rgba(148, 163, 184, 0.55) !important;
+            border-color: rgba(156, 163, 175, 0.65) !important;
         }
         [data-app-theme="day"] .text-white {
-            color: #0f172a !important;
+            color: #111827 !important;
         }
         [data-app-theme="day"] .text-slate-100,
         [data-app-theme="day"] .text-slate-200 {
-            color: #1e293b !important;
+            color: #1f2937 !important;
         }
         [data-app-theme="day"] .text-slate-300,
         [data-app-theme="day"] .text-slate-400 {
-            color: #475569 !important;
+            color: #374151 !important;
         }
         [data-app-theme="day"] .text-slate-500,
         [data-app-theme="day"] .text-slate-600 {
-            color: #64748b !important;
+            color: #6b7280 !important;
         }
         [data-app-theme="day"] input:not([type="checkbox"]):not([type="radio"]),
         [data-app-theme="day"] select,
         [data-app-theme="day"] textarea {
-            background-color: rgba(255, 255, 255, 0.98) !important;
-            color: #0f172a !important;
-            border-color: rgba(148, 163, 184, 0.65) !important;
+            background-color: rgba(249, 250, 251, 0.98) !important;
+            color: #111827 !important;
+            border-color: rgba(156, 163, 175, 0.75) !important;
         }
         [data-app-theme="day"] .placeholder\:text-slate-600::placeholder {
-            color: #64748b !important;
+            color: #6b7280 !important;
         }
         [data-app-theme="day"] [class*="bg-teal-950"],
         [data-app-theme="day"] [class*="bg-cyan-950"] {
-            background-color: rgba(236, 253, 245, 0.92) !important;
+            background-color: rgba(229, 231, 235, 0.9) !important;
+        }
+        /* Flashscore-like: спокойная светлая тема с минимальными цветовыми акцентами */
+        [data-app-theme="day"] .bg-gradient-to-r,
+        [data-app-theme="day"] .bg-gradient-to-br {
+            background-image: none !important;
+            background-color: #e5e7eb !important;
+            color: #111827 !important;
+        }
+        [data-app-theme="day"] [class*="from-"],
+        [data-app-theme="day"] [class*="to-"] {
+            --tw-gradient-from: transparent !important;
+            --tw-gradient-to: transparent !important;
+            --tw-gradient-stops: transparent !important;
+        }
+        [data-app-theme="day"] [class*="bg-emerald-"],
+        [data-app-theme="day"] [class*="bg-teal-"],
+        [data-app-theme="day"] [class*="bg-cyan-"],
+        [data-app-theme="day"] [class*="bg-blue-"],
+        [data-app-theme="day"] [class*="bg-fuchsia-"],
+        [data-app-theme="day"] [class*="bg-violet-"],
+        [data-app-theme="day"] [class*="bg-rose-"],
+        [data-app-theme="day"] [class*="bg-red-"],
+        [data-app-theme="day"] [class*="bg-amber-"] {
+            background-color: rgba(229, 231, 235, 0.92) !important;
+        }
+        [data-app-theme="day"] [class*="border-emerald-"],
+        [data-app-theme="day"] [class*="border-teal-"],
+        [data-app-theme="day"] [class*="border-cyan-"],
+        [data-app-theme="day"] [class*="border-blue-"],
+        [data-app-theme="day"] [class*="border-fuchsia-"],
+        [data-app-theme="day"] [class*="border-violet-"],
+        [data-app-theme="day"] [class*="border-rose-"],
+        [data-app-theme="day"] [class*="border-red-"],
+        [data-app-theme="day"] [class*="border-amber-"] {
+            border-color: rgba(156, 163, 175, 0.65) !important;
+        }
+        [data-app-theme="day"] [class*="text-emerald-"],
+        [data-app-theme="day"] [class*="text-teal-"],
+        [data-app-theme="day"] [class*="text-cyan-"],
+        [data-app-theme="day"] [class*="text-blue-"],
+        [data-app-theme="day"] [class*="text-fuchsia-"],
+        [data-app-theme="day"] [class*="text-violet-"],
+        [data-app-theme="day"] [class*="text-rose-"],
+        [data-app-theme="day"] [class*="text-red-"],
+        [data-app-theme="day"] [class*="text-amber-"] {
+            color: #374151 !important;
+        }
+        [data-app-theme="day"] .shadow-2xl,
+        [data-app-theme="day"] .shadow-xl,
+        [data-app-theme="day"] .shadow-lg,
+        [data-app-theme="day"] .shadow-md,
+        [data-app-theme="day"] .shadow-sm,
+        [data-app-theme="day"] .shadow-inner {
+            box-shadow: 0 1px 2px rgba(17, 24, 39, 0.07) !important;
+        }
+        [data-app-theme="day"] .hover\:bg-red-900\/60:hover,
+        [data-app-theme="day"] .hover\:bg-red-900\/50:hover,
+        [data-app-theme="day"] .hover\:bg-red-900\/45:hover,
+        [data-app-theme="day"] .hover\:bg-red-900\/40:hover,
+        [data-app-theme="day"] .hover\:bg-red-900\/30:hover,
+        [data-app-theme="day"] .hover\:bg-emerald-900\/60:hover,
+        [data-app-theme="day"] .hover\:bg-emerald-900\/50:hover,
+        [data-app-theme="day"] .hover\:bg-emerald-900\/40:hover,
+        [data-app-theme="day"] .hover\:bg-emerald-900\/30:hover,
+        [data-app-theme="day"] .hover\:bg-fuchsia-900\/20:hover {
+            background-color: rgba(209, 213, 219, 0.9) !important;
+        }
+        /* Песочная тема: тёплые бежево-песочные тона */
+        [data-app-theme="sand"] .custom-scrollbar::-webkit-scrollbar-track { background: rgba(226, 211, 189, 0.9); }
+        [data-app-theme="sand"] .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(174, 144, 109, 0.85); }
+        [data-app-theme="sand"] .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(146, 118, 86, 0.95); }
+        [data-app-theme="sand"] .bg-slate-950,
+        [data-app-theme="sand"] .bg-slate-950\/90,
+        [data-app-theme="sand"] .bg-slate-950\/80,
+        [data-app-theme="sand"] .bg-slate-950\/70,
+        [data-app-theme="sand"] .bg-slate-950\/60,
+        [data-app-theme="sand"] .bg-slate-950\/55,
+        [data-app-theme="sand"] .bg-slate-950\/50,
+        [data-app-theme="sand"] .bg-slate-950\/40,
+        [data-app-theme="sand"] .bg-slate-950\/25,
+        [data-app-theme="sand"] .bg-slate-900,
+        [data-app-theme="sand"] .bg-slate-900\/95,
+        [data-app-theme="sand"] .bg-slate-900\/92,
+        [data-app-theme="sand"] .bg-slate-900\/90,
+        [data-app-theme="sand"] .bg-slate-900\/80,
+        [data-app-theme="sand"] .bg-slate-900\/75,
+        [data-app-theme="sand"] .bg-slate-900\/70,
+        [data-app-theme="sand"] .bg-slate-900\/60,
+        [data-app-theme="sand"] .bg-slate-900\/55,
+        [data-app-theme="sand"] .bg-slate-900\/50,
+        [data-app-theme="sand"] .bg-slate-900\/40,
+        [data-app-theme="sand"] .bg-slate-800,
+        [data-app-theme="sand"] .bg-slate-800\/95,
+        [data-app-theme="sand"] .bg-slate-800\/90,
+        [data-app-theme="sand"] .bg-slate-800\/80,
+        [data-app-theme="sand"] .bg-slate-800\/70,
+        [data-app-theme="sand"] .bg-slate-800\/60,
+        [data-app-theme="sand"] .bg-slate-800\/50,
+        [data-app-theme="sand"] .bg-slate-800\/40 {
+            background-color: rgba(245, 235, 219, 0.96) !important;
+        }
+        [data-app-theme="sand"] .bg-slate-950\/15,
+        [data-app-theme="sand"] .bg-slate-900\/15,
+        [data-app-theme="sand"] .bg-slate-900\/20 {
+            background-color: rgba(236, 223, 204, 0.95) !important;
+        }
+        [data-app-theme="sand"] .border-slate-800,
+        [data-app-theme="sand"] .border-slate-800\/80,
+        [data-app-theme="sand"] .border-slate-800\/60,
+        [data-app-theme="sand"] .border-slate-800\/50,
+        [data-app-theme="sand"] .border-slate-700,
+        [data-app-theme="sand"] .border-slate-700\/80,
+        [data-app-theme="sand"] .border-slate-700\/70,
+        [data-app-theme="sand"] .border-slate-700\/60,
+        [data-app-theme="sand"] .border-slate-700\/50,
+        [data-app-theme="sand"] .border-slate-700\/45,
+        [data-app-theme="sand"] .border-slate-700\/40,
+        [data-app-theme="sand"] .border-slate-600,
+        [data-app-theme="sand"] .border-slate-600\/80,
+        [data-app-theme="sand"] .border-slate-600\/70,
+        [data-app-theme="sand"] .border-slate-600\/50 {
+            border-color: rgba(176, 146, 113, 0.6) !important;
+        }
+        [data-app-theme="sand"] .text-white { color: #3b2f20 !important; }
+        [data-app-theme="sand"] .text-slate-100,
+        [data-app-theme="sand"] .text-slate-200 { color: #4b3a26 !important; }
+        [data-app-theme="sand"] .text-slate-300,
+        [data-app-theme="sand"] .text-slate-400 { color: #6b4e2e !important; }
+        [data-app-theme="sand"] .text-slate-500,
+        [data-app-theme="sand"] .text-slate-600 { color: #8a6a45 !important; }
+        [data-app-theme="sand"] input:not([type="checkbox"]):not([type="radio"]),
+        [data-app-theme="sand"] select,
+        [data-app-theme="sand"] textarea {
+            background-color: rgba(252, 247, 239, 0.98) !important;
+            color: #3b2f20 !important;
+            border-color: rgba(176, 146, 113, 0.72) !important;
+        }
+        [data-app-theme="sand"] .placeholder\:text-slate-600::placeholder { color: #8a6a45 !important; }
+        [data-app-theme="sand"] .bg-gradient-to-r,
+        [data-app-theme="sand"] .bg-gradient-to-br {
+            background-image: none !important;
+            background-color: #e9d8be !important;
+            color: #3b2f20 !important;
+        }
+        [data-app-theme="sand"] [class*="from-"],
+        [data-app-theme="sand"] [class*="to-"] {
+            --tw-gradient-from: transparent !important;
+            --tw-gradient-to: transparent !important;
+            --tw-gradient-stops: transparent !important;
+        }
+        [data-app-theme="sand"] [class*="bg-emerald-"],
+        [data-app-theme="sand"] [class*="bg-teal-"],
+        [data-app-theme="sand"] [class*="bg-cyan-"],
+        [data-app-theme="sand"] [class*="bg-blue-"],
+        [data-app-theme="sand"] [class*="bg-fuchsia-"],
+        [data-app-theme="sand"] [class*="bg-violet-"],
+        [data-app-theme="sand"] [class*="bg-rose-"],
+        [data-app-theme="sand"] [class*="bg-red-"],
+        [data-app-theme="sand"] [class*="bg-amber-"] {
+            background-color: rgba(236, 223, 204, 0.92) !important;
+        }
+        [data-app-theme="sand"] [class*="border-emerald-"],
+        [data-app-theme="sand"] [class*="border-teal-"],
+        [data-app-theme="sand"] [class*="border-cyan-"],
+        [data-app-theme="sand"] [class*="border-blue-"],
+        [data-app-theme="sand"] [class*="border-fuchsia-"],
+        [data-app-theme="sand"] [class*="border-violet-"],
+        [data-app-theme="sand"] [class*="border-rose-"],
+        [data-app-theme="sand"] [class*="border-red-"],
+        [data-app-theme="sand"] [class*="border-amber-"] {
+            border-color: rgba(176, 146, 113, 0.62) !important;
+        }
+        [data-app-theme="sand"] [class*="text-emerald-"],
+        [data-app-theme="sand"] [class*="text-teal-"],
+        [data-app-theme="sand"] [class*="text-cyan-"],
+        [data-app-theme="sand"] [class*="text-blue-"],
+        [data-app-theme="sand"] [class*="text-fuchsia-"],
+        [data-app-theme="sand"] [class*="text-violet-"],
+        [data-app-theme="sand"] [class*="text-rose-"],
+        [data-app-theme="sand"] [class*="text-red-"],
+        [data-app-theme="sand"] [class*="text-amber-"] {
+            color: #6b4e2e !important;
+        }
+        [data-app-theme="sand"] .shadow-2xl,
+        [data-app-theme="sand"] .shadow-xl,
+        [data-app-theme="sand"] .shadow-lg,
+        [data-app-theme="sand"] .shadow-md,
+        [data-app-theme="sand"] .shadow-sm,
+        [data-app-theme="sand"] .shadow-inner {
+            box-shadow: 0 1px 2px rgba(59, 47, 32, 0.08) !important;
         }
 
         /* Тема «Digital Blue» (палитра 50–950): светлый сине-цифровой интерфейс поверх utility Tailwind */
@@ -235,7 +426,8 @@
             color: rgb(248 250 252);
         }
         [data-app-theme="day"] select.express-tier-select,
-        [data-app-theme="digitalBlue"] select.express-tier-select {
+        [data-app-theme="digitalBlue"] select.express-tier-select,
+        [data-app-theme="sand"] select.express-tier-select {
             color-scheme: light;
             background-color: #ffffff !important;
             color: #0f172a !important;
@@ -243,12 +435,14 @@
             box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
         }
         [data-app-theme="day"] select.express-tier-select:focus,
-        [data-app-theme="digitalBlue"] select.express-tier-select:focus {
+        [data-app-theme="digitalBlue"] select.express-tier-select:focus,
+        [data-app-theme="sand"] select.express-tier-select:focus {
             border-color: rgb(147 51 234 / 0.65) !important;
             box-shadow: 0 0 0 2px rgb(192 38 211 / 0.2);
         }
         [data-app-theme="day"] select.express-tier-select option,
-        [data-app-theme="digitalBlue"] select.express-tier-select option {
+        [data-app-theme="digitalBlue"] select.express-tier-select option,
+        [data-app-theme="sand"] select.express-tier-select option {
             background-color: #f8fafc;
             color: #0f172a;
         }
@@ -308,6 +502,18 @@
         const POOL_LS_HISTORY = 'dutchingLadderPoolHistory';
         const GLOBAL_HISTORY_LS_KEY = 'dutchingGlobalHistory';
         const LINE_STRATEGIES_DATA_LS_KEY = 'dutchingLineStrategiesData';
+        const SUPABASE_URL = 'https://zougmxypkuafvtgmfblf.supabase.co';
+        const SUPABASE_ANON_KEY =
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvdWdteHlwa3VhZnZ0Z21mYmxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzIzNDAsImV4cCI6MjA4OTQ0ODM0MH0.SFo1pEWBnWN__-A2kr7gJ7J5K_CI-h39SrI_3KSriC4';
+        const SUPABASE_STATE_ROW_ID = 'global';
+        const supabaseClient =
+            typeof window !== 'undefined' &&
+            window.supabase &&
+            typeof window.supabase.createClient === 'function' &&
+            SUPABASE_URL &&
+            SUPABASE_ANON_KEY
+                ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+                : null;
 
         const poolClampSeries = (n) => Math.min(POOL_MAX_SERIES, Math.max(POOL_MIN_SERIES, parseInt(n, 10) || POOL_DEFAULT_SERIES));
         const poolClampSteps = (n) => Math.min(POOL_MAX_STEPS, Math.max(POOL_MIN_STEPS, parseInt(n, 10) || POOL_DEFAULT_STEPS));
@@ -1101,77 +1307,77 @@
             {
                 id: 'mock-eng-pl',
                 title: 'Англия: Премьер-лига',
-                teams: ['Арсенал', 'Астон Вилла', 'Борнмут', 'Брентфорд', 'Брайтон', 'Вест Хэм', 'Вулверхэмптон', 'Ливерпуль', 'Ман Сити', 'Ман Юнайтед', 'Ньюкасл', 'Ноттингем Форест', 'Сандерленд', 'Тоттенхэм', 'Челси', 'Эвертон', 'Фулхэм', 'Кристал Пэлас', 'Лидс', 'Лестер'],
+                teams: ['Арсенал', 'Астон Вилла', 'Борнмут', 'Брентфорд', 'Брайтон', 'Бернли', 'Вест Хэм', 'Вулверхэмптон', 'Ливерпуль', 'Ман Сити', 'Ман Юнайтед', 'Ньюкасл', 'Ноттингем Форест', 'Сандерленд', 'Тоттенхэм', 'Челси', 'Эвертон', 'Фулхэм', 'Кристал Пэлас', 'Лидс'],
             },
             {
                 id: 'mock-eng-ch',
                 title: 'Англия: Чемпионшип',
-                teams: ['Бирмингем', 'Блэкберн', 'Бристоль Сити', 'Вест Бромвич', 'Ипсвич', 'Ковентри', 'Мидлсбро', 'Миллуолл', 'Норвич', 'Престон', 'КПР', 'Шеффилд Юнайтед', 'Шеффилд Уэнсдей', 'Суонси', 'Сток Сити', 'Халл Сити'],
+                teams: ['Бирмингем', 'Блэкберн', 'Бристоль Сити', 'Вест Бромвич', 'Ипсвич', 'Ковентри', 'Лестер', 'Мидлсбро', 'Миллуолл', 'Норвич', 'Оксфорд', 'Портсмут', 'Престон', 'КПР', 'Саутгемптон', 'Сток Сити', 'Суонси', 'Уотфорд', 'Халл Сити', 'Чарльтон', 'Шеффилд Юнайтед', 'Шеффилд Уэнсдей', 'Дерби', 'Рексем'],
             },
             {
                 id: 'mock-eng-l1',
                 title: 'Англия: Лига 1',
-                teams: ['Бертон', 'Болтон', 'Блэкпул', 'Брэдфорд', 'Линкольн', 'Оксфорд', 'Питерборо', 'Порт Вейл', 'Рексем', 'Ротерем', 'Уиган', 'Шрусбери', 'Чарльтон', 'Эксетер', 'Рединг', 'Нортгемптон'],
+                teams: ['Барнсли', 'Бертон', 'Блэкпул', 'Болтон', 'Брэдфорд', 'Кардифф', 'Лейтон Ориент', 'Линкольн', 'Лутон', 'Мансфилд', 'Нортгемптон', 'Питерборо', 'Плимут', 'Порт Вейл', 'Рединг', 'Ротерем', 'Стивенейдж', 'Стокпорт', 'Уиган', 'Уикомб', 'Хаддерсфилд', 'Шрусбери', 'Эксетер', 'Донкастер'],
             },
             {
                 id: 'mock-es-lal',
                 title: 'Испания: Ла Лига',
-                teams: ['Атлетик', 'Атлетико', 'Барселона', 'Бетис', 'Валенсия', 'Вильярреал', 'Жирона', 'Кельта', 'Леванте', 'Мальорка', 'Осасуна', 'Райо Вальекано', 'Реал', 'Реал Сосьедад', 'Севилья', 'Эспаньол', 'Эльче', 'Алавес', 'Хетафе', 'Лас-Пальмас'],
+                teams: ['Алавес', 'Атлетик', 'Атлетико', 'Барселона', 'Бетис', 'Валенсия', 'Вильярреал', 'Жирона', 'Кельта', 'Леванте', 'Мальорка', 'Осасуна', 'Райо Вальекано', 'Реал Мадрид', 'Реал Овьедо', 'Реал Сосьедад', 'Севилья', 'Эспаньол', 'Эльче', 'Хетафе'],
             },
             {
                 id: 'mock-es-l2',
                 title: 'Испания: Ла Лига 2',
-                teams: ['Андорра', 'Альбасете', 'Альмерия', 'Бургос', 'Вальядолид', 'Кадис', 'Кастельон', 'Кордова', 'Культур Леонеса', 'Лас-Пальмас', 'Леганес', 'Малага', 'Мирандес', 'Расинг', 'Реал Сосьедад В', 'Сарагоса', 'Сеута', 'Спортинг Хихон', 'Тенерифе', 'Уэска', 'Эйбар', 'Эльче', 'Гранада', 'Депортиво'],
+                teams: ['Альбасете', 'Альмерия', 'Андорра', 'Бургос', 'Вальядолид', 'Гранада', 'Депортиво', 'Кадис', 'Кастельон', 'Кордова', 'Леганес', 'Малага', 'Мирандес', 'Расинг Сантандер', 'Сарагоса', 'Сеута', 'Спортинг Хихон', 'Тенерифе', 'Уэска', 'Эйбар', 'Эльче', 'Жирона Б'],
             },
             {
                 id: 'mock-es-pf',
                 title: 'Испания: 3-й дивизион (RFEF)',
-                teams: ['Аревисака', 'Барбастро', 'Конкенсе', 'Культураль', 'Линарес', 'Мериде', 'Реал Унион', 'Сестао', 'Толедо', 'Уэска II', 'Ферроль', 'Эльденсе', 'Сан-Себастьян', 'Альхесирас', 'Атлетико Балеарес'],
+                teams: ['Альхесирас', 'Атлетико Балеарес', 'Барбастро', 'Бильбао Атлетик', 'Культураль Леонеса', 'Линарес', 'Логроньес', 'Луго', 'Мерида', 'Мурсия', 'Оренсе', 'Понферрадина', 'Реал Унион', 'Сабадель', 'Санлукеньо', 'Сельта Б', 'Сестао', 'Тарасона', 'Унионистас', 'Эльденсе'],
             },
             {
                 id: 'mock-de-bl1',
                 title: 'Германия: Бундеслига',
-                teams: ['Айнтрахт', 'Аугсбург', 'Бавария', 'Байер', 'Боруссия Д', 'Вердер', 'Вольфсбург', 'Гладбах', 'Гойзер', 'Кёльн', 'Лейпциг', 'Майнц', 'Санкт-Паули', 'Унион', 'Фрайбург', 'Хоффенхайм', 'Штутгарт', 'Герта'],
+                teams: ['Айнтрахт', 'Аугсбург', 'Бавария', 'Байер', 'Боруссия Д', 'Боруссия М', 'Вердер', 'Вольфсбург', 'Гамбург', 'Кёльн', 'Лейпциг', 'Майнц', 'Санкт-Паули', 'Унион Берлин', 'Фрайбург', 'Хайденхайм', 'Хоффенхайм', 'Штутгарт'],
             },
             {
                 id: 'mock-de-bl2',
                 title: 'Германия: 2. Бундеслига',
-                teams: ['Бохум', 'Дармштадт', 'Динамо Дрезден', 'Кайзерслаутерн', 'Карлсруэ', 'Нюрнберг', 'Падерборн', 'Пройссен', 'Росток', 'Шальке', 'Эльверсберг', 'Фортуна', 'Ганновер', 'Гройтер', 'Магдебург', 'Киль'],
+                teams: ['Айнтрахт Брауншвейг', 'Арминия', 'Бохум', 'Ганновер', 'Герта', 'Гройтер Фюрт', 'Дармштадт', 'Динамо Дрезден', 'Кайзерслаутерн', 'Карлсруэ', 'Киль', 'Магдебург', 'Нюрнберг', 'Падерборн', 'Пройссен Мюнстер', 'Фортуна Дюссельдорф', 'Шальке', 'Эльверсберг'],
             },
             {
                 id: 'mock-de-l3',
                 title: 'Германия: 3. Лига',
-                teams: ['1860 Мюнхен', 'Вальдхоф', 'Веен', 'Виктория Кёльн', 'Ингольштадт', 'Маннгейм', 'Оснабрюк', 'Рот-Вайс Эссен', 'Саарбрюккен', 'Ульм', 'Фрайбург II', 'Цвиккау', 'Эрфурт', 'Дюрен', 'Штуттгартер', 'Боруссия II'],
+                teams: ['1860 Мюнхен', 'Ален', 'Арминия Билефельд', 'Верль', 'Виктория Кёльн', 'Веен Висбаден', 'Ганза Росток', 'Динамо Дрезден II', 'Дортмунд II', 'Дуйсбург', 'Ингольштадт', 'Мангейм', 'Оснабрюк', 'Рот-Вайс Эссен', 'Саарбрюккен', 'Ульм', 'Унтерхахинг', 'Энерги Котбус', 'Эрцгебирге Ауэ', 'Штутгарт II'],
             },
             {
                 id: 'mock-it-a',
                 title: 'Италия: Серия A',
-                teams: ['Аталанта', 'Болонья', 'Верона', 'Интер', 'Кальяри', 'Комо', 'Кремонезе', 'Лацио', 'Лечче', 'Милан', 'Наполи', 'Парма', 'Рома', 'Торино', 'Удинезе', 'Фиорентина', 'Дженоа', 'Ювентус'],
+                teams: ['Аталанта', 'Болонья', 'Верона', 'Интер', 'Кальяри', 'Комо', 'Кремонезе', 'Лацио', 'Лечче', 'Милан', 'Наполи', 'Парма', 'Пиза', 'Рома', 'Сассуоло', 'Торино', 'Удинезе', 'Фиорентина', 'Дженоа', 'Ювентус'],
             },
             {
                 id: 'mock-it-b',
                 title: 'Италия: Серия B',
-                teams: ['Бари', 'Брешиа', 'Каррарезе', 'Катанцаро', 'Кремона', 'Мантова', 'Модена', 'Палермо', 'Пиза', 'Реджина', 'Сампдория', 'Сассуоло', 'Специя', 'Чезена', 'Эмполи', 'Юве Стабия', 'Салернитана', 'Пескара'],
+                teams: ['Авеллино', 'Бари', 'Венеция', 'Виртус Энтелла', 'Каррарезе', 'Катанцаро', 'Мантова', 'Модена', 'Монца', 'Падова', 'Палермо', 'Пескара', 'Реджана', 'Сампдория', 'Специя', 'Фрозиноне', 'Чезена', 'Эмполи', 'Юве Стабия', 'Зюдтироль'],
             },
             {
                 id: 'mock-it-c',
                 title: 'Италия: Серия C (группа)',
-                teams: ['Алессандрия', 'Ареццо', 'Губбио', 'Лекко', 'Ливорно', 'Перуджа', 'Пистойезе', 'Понтедера', 'Римини', 'Сиена', 'Тернана', 'Феральпи', 'Виченца', 'Новара', 'Падова', 'Триестина'],
+                teams: ['Алессандрия', 'Ареццо', 'Виченца', 'Губбио', 'Карпи', 'Лекко', 'Ливорно', 'Новара', 'Падова', 'Перуджа', 'Пескаро U23', 'Пистойезе', 'Понтедера', 'Про Верчелли', 'Римини', 'Тернана', 'Триестина', 'Фералписало', 'Чезена U23', 'Ювентус Next Gen'],
             },
             {
                 id: 'mock-fr-l1',
                 title: 'Франция: Лига 1',
-                teams: ['Анже', 'Брест', 'Ланс', 'Лилль', 'Лион', 'Марсель', 'Метц', 'Монако', 'Нант', 'Ницца', 'ПСЖ', 'Ренн', 'Страсбур', 'Тулуза', 'Осер', 'Ле Авр', 'Сент-Этьен', 'Монпелье'],
+                teams: ['Анже', 'Брест', 'Ланс', 'Лилль', 'Лион', 'Лорьян', 'Марсель', 'Метц', 'Монако', 'Нант', 'Ницца', 'ПСЖ', 'Пари ФК', 'Ренн', 'Страсбур', 'Тулуза', 'Осер', 'Ле Авр'],
             },
             {
                 id: 'mock-fr-l2',
                 title: 'Франция: Лига 2',
-                teams: ['Амьен', 'Бастия', 'Бордо', 'Булонь', 'Гавр', 'Генгам', 'Гренобль', 'Дижон', 'Дюнкерк', 'Кан', 'Клермон', 'Лаваль', 'Ле-Ман', 'Монпелье', 'Нанси', 'Ним', 'По', 'Ред Стар', 'Реймс', 'Родез', 'Сент-Етьен', 'Сошо', 'Труа', 'Флери', 'Аннеси'],
+                teams: ['Амьен', 'Аннеси', 'Бастия', 'Генгам', 'Гренобль', 'Дюнкерк', 'Кан', 'Клермон', 'Лаваль', 'Ле-Ман', 'Мартиг', 'Нанси', 'Ним', 'По', 'Ред Стар', 'Родез', 'Труа', 'Валансьен'],
             },
             {
                 id: 'mock-fr-nat',
                 title: 'Франция: Националь',
-                teams: ['Бове', 'Версаль', 'Дижон II', 'Конкарно', 'Ле-Ман', 'Орлеан', 'Руан', 'Седан', 'Шатору', 'Шербур', 'Виан', 'Ред Стар', 'Кретей', 'Сен-Привест', 'Олимпик Лион II', 'Мариньян'],
+                teams: ['Бове', 'Версаль', 'Вильфранш', 'Дижон II', 'Конкарно', 'Кретей', 'Мариньян', 'Ним II', 'Ньор', 'Орлеан', 'Руан', 'Сен-Приве', 'Сошо', 'Шатору', 'Шоле', 'Эпиналь', 'Ле-Пюи', 'Фрежюс'],
             },
             {
                 id: 'mock-eu-ucl',
@@ -2100,26 +2306,31 @@
 
         const THEME_STYLES = {
             slate: { pageBg: '#0f172a', pageFg: '#f1f5f9', overlay: 'rgba(2, 6, 23, 0.86)', defaultFontId: 'outfit' },
-            day: { pageBg: '#f8fafc', pageFg: '#0f172a', overlay: 'rgba(248, 250, 252, 0.78)', defaultFontId: 'lexend' },
-            /** Palette 1 (Digital Blue): 50 #E5F0FF … 950 #000E24 — фон и текст как в макете. */
-            digitalBlue: {
-                pageBg: '#E5F0FF',
-                pageFg: '#001433',
-                overlay: 'rgba(0, 20, 51, 0.38)',
-                defaultFontId: 'outfit',
+            lightGray: {
+                pageBg: '#f3f4f6',
+                pageFg: '#111827',
+                overlay: 'rgba(243, 244, 246, 0.72)',
+                defaultFontId: 'lexend',
+            },
+            sand: {
+                pageBg: '#f5e8d6',
+                pageFg: '#3b2f20',
+                overlay: 'rgba(245, 232, 214, 0.68)',
+                defaultFontId: 'lexend',
             },
         };
         const UI_THEMES = [
             { id: 'slate', label: 'Тёмная' },
-            { id: 'day', label: 'Светлая' },
-            { id: 'digitalBlue', label: 'Digital Blue' },
+            { id: 'lightGray', label: 'Светло-серая' },
+            { id: 'sand', label: 'Песочная' },
         ];
         const UI_THEME_IDS = new Set(UI_THEMES.map((t) => t.id));
         const normalizeStoredUiTheme = (raw) => {
             const r = String(raw || '').trim();
-            if (r === 'digitalBlue') return 'digitalBlue';
-            const light = new Set(['day', 'cream', 'ice', 'lavender', 'paper']);
-            if (light.has(r)) return 'day';
+            if (r === 'lightGray') return 'lightGray';
+            if (r === 'sand') return 'sand';
+            const light = new Set(['day', 'digitalBlue', 'cream', 'ice', 'lavender', 'paper']);
+            if (light.has(r)) return 'lightGray';
             return 'slate';
         };
         const uiThemeStyle = (id) => THEME_STYLES[UI_THEME_IDS.has(id) ? id : 'slate'] || THEME_STYLES.slate;
@@ -2673,16 +2884,87 @@
 
           const openLineStrategyDollarModal = (b) => {
               const strategies = lineStrategiesData.strategies || [];
-              if (!strategies.length) {
-                  setExpressGenMessage('Сначала создайте стратегию на вкладке «Главная».');
+              const openPools = (poolMultiRef.current.pools || []).filter((p) => !p.isClosed);
+              if (!strategies.length && !openPools.length) {
+                  setExpressGenMessage('Сначала создайте стратегию на «Главная» или откройте пул на вкладке «Пул лесенок».');
                   return;
               }
               setLineStrategyDollarModal({
                   bundle: cloneBundleForLineStrategy(b),
                   stakeStr: '10',
-                  strategyId: strategies[0].id,
+                  strategyId: strategies[0] ? strategies[0].id : '',
+                  poolId: openPools[0] ? openPools[0].id : '',
                   err: '',
+                  poolErr: '',
               });
+          };
+
+          const choosePoolSlotByMinStake = (pool) => {
+              if (!pool || !pool.session || !pool.session.series) return null;
+              const slots = poolNextBetSlots(pool.session.series);
+              if (!slots.length) return null;
+              const ranked = slots
+                  .map((slot) => {
+                      const st = pool.session.series[slot.si] && pool.session.series[slot.si].steps[slot.wi];
+                      return {
+                          ...slot,
+                          stake: poolMoney2(Number(st && st.stake) || 0),
+                      };
+                  })
+                  .sort((a, b) => {
+                      if (a.stake !== b.stake) return a.stake - b.stake;
+                      if (a.wi !== b.wi) return a.wi - b.wi;
+                      return a.si - b.si;
+                  });
+              return ranked[0] || null;
+          };
+
+          const commitLineBundleToPoolFromModal = () => {
+              const m = lineStrategyDollarModal;
+              if (!m || !m.bundle) return;
+              const openPools = (poolMultiRef.current.pools || []).filter((p) => !p.isClosed);
+              if (!openPools.length) {
+                  setLineStrategyDollarModal({ ...m, poolErr: 'Нет открытых пулов для добавления.' });
+                  return;
+              }
+              const pid = m.poolId || (openPools[0] && openPools[0].id) || '';
+              const targetPool = openPools.find((p) => String(p.id) === String(pid));
+              if (!targetPool) {
+                  setLineStrategyDollarModal({ ...m, poolErr: 'Выберите открытый пул.' });
+                  return;
+              }
+              const slot = choosePoolSlotByMinStake(targetPool);
+              if (!slot) {
+                  setLineStrategyDollarModal({ ...m, poolErr: `В пуле «${targetPool.name}» нет доступных шагов для новой ставки.` });
+                  return;
+              }
+              setPoolMulti((pm) => ({
+                  ...pm,
+                  activePoolId: targetPool.id,
+                  pools: pm.pools.map((p) => {
+                      if (String(p.id) !== String(targetPool.id)) return p;
+                      const next = JSON.parse(JSON.stringify(p.session));
+                      const step = next.series[slot.si].steps[slot.wi];
+                      const sourceLegs = (m.bundle.legs || []).slice(0, 3);
+                      step.legs = [poolEmptyLeg(), poolEmptyLeg(), poolEmptyLeg()];
+                      sourceLegs.forEach((lg, i) => {
+                          step.legs[i] = {
+                              matchName: String(lg.match || '').trim(),
+                              market: String(lg.prediction || '').trim(),
+                              odd: poolMoney2(Number(lg.odd) || 0),
+                          };
+                      });
+                      return { ...p, session: next };
+                  }),
+              }));
+              if ((m.bundle.legs || []).length > 1) {
+                  const betKey = `${targetPool.id}-${slot.si}-${slot.wi}`;
+                  setPoolBetExpressOpenKeys((prev) => (prev.includes(betKey) ? prev : [...prev, betKey]));
+              }
+              setLineStrategyDollarModal(null);
+              setExpressGenMessage(
+                  `Купон добавлен в пул «${targetPool.name}»: шаг ${slot.wi + 1}, серия ${slot.si + 1}.`,
+              );
           };
 
           const commitLineStrategyDollarModal = () => {
@@ -2969,6 +3251,166 @@
           const [poolTabDeletePrompt, setPoolTabDeletePrompt] = useState(null);
           /** Ключи `poolId-si-wi`: открыт блок 2–3 ноги экспресса в форме ставки. */
           const [poolBetExpressOpenKeys, setPoolBetExpressOpenKeys] = useState([]);
+          const remoteHydratedRef = useRef(!supabaseClient);
+          const remoteApplyingRef = useRef(false);
+          const remoteSaveTimerRef = useRef(null);
+
+          const remoteSnapshot = useMemo(
+              () => ({
+                  v: 1,
+                  mainBank,
+                  uiTheme,
+                  uiFontId,
+                  bank,
+                  minimumBet,
+                  activeTab,
+                  historyByTab,
+                  globalHistory,
+                  classicCount,
+                  placedBetsClassic: Array.from(placedBetsClassic || []),
+                  classicModes,
+                  classicMatches,
+                  customTotalsCount,
+                  placedBetsTotals: Array.from(placedBetsTotals || []),
+                  totalsModes,
+                  totalsMatches,
+                  expressPicks,
+                  expressBundles,
+                  expressBundlesPage,
+                  expressLineLeagueExpanded,
+                  expressLineMarketsByMatch,
+                  expressLineDayData,
+                  lineStrategiesData,
+                  chaserTarget,
+                  chaserAlreadyStaked,
+                  chaserPossibleWin,
+                  chaserSteps,
+                  chaserInputOdd,
+                  poolMulti,
+                  poolHistory,
+              }),
+              [
+                  mainBank,
+                  uiTheme,
+                  uiFontId,
+                  bank,
+                  minimumBet,
+                  activeTab,
+                  historyByTab,
+                  globalHistory,
+                  classicCount,
+                  placedBetsClassic,
+                  classicModes,
+                  classicMatches,
+                  customTotalsCount,
+                  placedBetsTotals,
+                  totalsModes,
+                  totalsMatches,
+                  expressPicks,
+                  expressBundles,
+                  expressBundlesPage,
+                  expressLineLeagueExpanded,
+                  expressLineMarketsByMatch,
+                  expressLineDayData,
+                  lineStrategiesData,
+                  chaserTarget,
+                  chaserAlreadyStaked,
+                  chaserPossibleWin,
+                  chaserSteps,
+                  chaserInputOdd,
+                  poolMulti,
+                  poolHistory,
+              ],
+          );
+
+          useEffect(() => {
+              if (!supabaseClient) return;
+              let cancelled = false;
+              const loadRemoteState = async () => {
+                  try {
+                      const { data, error } = await supabaseClient
+                          .from('app_state')
+                          .select('state')
+                          .eq('id', SUPABASE_STATE_ROW_ID)
+                          .maybeSingle();
+                      if (cancelled) return;
+                      if (error || !data || !data.state || typeof data.state !== 'object') {
+                          remoteHydratedRef.current = true;
+                          return;
+                      }
+                      const rs = data.state;
+                      remoteApplyingRef.current = true;
+                      if (rs.mainBank != null) setMainBank(String(rs.mainBank));
+                      if (rs.uiTheme != null) setUiTheme(normalizeStoredUiTheme(rs.uiTheme));
+                      if (rs.uiFontId != null && FONT_PRESET_IDS.has(rs.uiFontId)) setUiFontId(rs.uiFontId);
+                      if (rs.bank != null) setBank(Number(rs.bank) || 0);
+                      if (rs.minimumBet != null) setMinimumBet(Number(rs.minimumBet) || 0);
+                      if (typeof rs.activeTab === 'string') setActiveTab(rs.activeTab);
+                      if (rs.historyByTab && typeof rs.historyByTab === 'object') {
+                          const next = emptyHistoryByTab();
+                          HISTORY_TAB_KEYS.forEach((k) => {
+                              if (Array.isArray(rs.historyByTab[k])) next[k] = rs.historyByTab[k];
+                          });
+                          setHistoryByTab(next);
+                      }
+                      if (Array.isArray(rs.globalHistory)) setGlobalHistory(rs.globalHistory);
+                      if (rs.classicCount != null) setClassicCount(Number(rs.classicCount) || 3);
+                      if (Array.isArray(rs.placedBetsClassic)) setPlacedBetsClassic(new Set(rs.placedBetsClassic.map((x) => Number(x))));
+                      if (rs.classicModes && typeof rs.classicModes === 'object') setClassicModes(rs.classicModes);
+                      if (Array.isArray(rs.classicMatches)) setClassicMatches(rs.classicMatches);
+                      if (rs.customTotalsCount != null) setCustomTotalsCount(Number(rs.customTotalsCount) || 4);
+                      if (Array.isArray(rs.placedBetsTotals)) setPlacedBetsTotals(new Set(rs.placedBetsTotals.map((x) => Number(x))));
+                      if (rs.totalsModes && typeof rs.totalsModes === 'object') setTotalsModes(rs.totalsModes);
+                      if (Array.isArray(rs.totalsMatches)) setTotalsMatches(rs.totalsMatches);
+                      if (Array.isArray(rs.expressPicks)) setExpressPicks(rs.expressPicks);
+                      if (Array.isArray(rs.expressBundles)) setExpressBundles(rs.expressBundles);
+                      if (typeof rs.expressBundlesPage === 'string') setExpressBundlesPage(rs.expressBundlesPage);
+                      if (rs.expressLineLeagueExpanded && typeof rs.expressLineLeagueExpanded === 'object') setExpressLineLeagueExpanded(rs.expressLineLeagueExpanded);
+                      if (rs.expressLineMarketsByMatch && typeof rs.expressLineMarketsByMatch === 'object') setExpressLineMarketsByMatch(rs.expressLineMarketsByMatch);
+                      if (Array.isArray(rs.expressLineDayData)) setExpressLineDayData(rs.expressLineDayData);
+                      if (rs.lineStrategiesData && typeof rs.lineStrategiesData === 'object') setLineStrategiesData(rs.lineStrategiesData);
+                      if (rs.chaserTarget != null) setChaserTarget(rs.chaserTarget);
+                      if (rs.chaserAlreadyStaked != null) setChaserAlreadyStaked(rs.chaserAlreadyStaked);
+                      if (rs.chaserPossibleWin != null) setChaserPossibleWin(rs.chaserPossibleWin);
+                      if (Array.isArray(rs.chaserSteps)) setChaserSteps(rs.chaserSteps);
+                      if (rs.chaserInputOdd != null) setChaserInputOdd(rs.chaserInputOdd);
+                      if (rs.poolMulti && rs.poolMulti.pools && Array.isArray(rs.poolMulti.pools)) setPoolMulti(rs.poolMulti);
+                      if (Array.isArray(rs.poolHistory)) setPoolHistory(rs.poolHistory);
+                  } catch (e) {
+                      // fallback to local state
+                  } finally {
+                      if (cancelled) return;
+                      remoteApplyingRef.current = false;
+                      remoteHydratedRef.current = true;
+                  }
+              };
+              loadRemoteState();
+              return () => {
+                  cancelled = true;
+              };
+          }, []);
+
+          useEffect(() => {
+              if (!supabaseClient || !remoteHydratedRef.current || remoteApplyingRef.current) return;
+              if (remoteSaveTimerRef.current) clearTimeout(remoteSaveTimerRef.current);
+              remoteSaveTimerRef.current = setTimeout(async () => {
+                  try {
+                      await supabaseClient.from('app_state').upsert(
+                          {
+                              id: SUPABASE_STATE_ROW_ID,
+                              state: remoteSnapshot,
+                              updated_at: new Date().toISOString(),
+                          },
+                          { onConflict: 'id' },
+                      );
+                  } catch (e) {
+                      // ignore network errors, local storage remains source of truth
+                  }
+              }, 900);
+              return () => {
+                  if (remoteSaveTimerRef.current) clearTimeout(remoteSaveTimerRef.current);
+              };
+          }, [remoteSnapshot]);
 
           // Сохранение в LocalStorage
           useEffect(() => { localStorage.setItem('dutchingMainBank', mainBank); }, [mainBank]);
@@ -5621,7 +6063,7 @@
                               </div>
                           </div>
                       ) : null}
-                      <div className="min-w-0 max-w-full space-y-2.5 px-1 pb-16 sm:px-2">
+                      <div className="mx-auto w-full min-w-0 max-w-6xl space-y-2.5 px-1 pb-16 sm:px-2">
                       <div className="rounded-lg border border-teal-700/45 bg-slate-900/80 px-2 py-1.5 shadow-sm shadow-teal-950/30 backdrop-blur-sm">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                               <span className="text-[13px] font-black uppercase tracking-wide text-teal-400/90">Пулы</span>
@@ -6629,6 +7071,29 @@
                         : expressListTab === 'ordinary'
                           ? ordinarySinglesOnly
                           : [];
+              const normalizePoolText = (v) => String(v || '').trim().toLowerCase();
+              const bundleExistsInOpenPools = (bundle) => {
+                  const sourceLegs = (bundle && bundle.legs ? bundle.legs : []).slice(0, 3);
+                  if (!sourceLegs.length) return false;
+                  return (poolMulti.pools || []).some((pool) =>
+                      !pool.isClosed &&
+                      (pool.session && pool.session.series ? pool.session.series : []).some((ser) =>
+                          (ser.steps || []).some((st) => {
+                              if (!st || !st.legs || (st.status !== 'empty' && st.status !== 'placed')) return false;
+                              for (let i = 0; i < sourceLegs.length; i++) {
+                                  const src = sourceLegs[i] || {};
+                                  const dst = st.legs[i] || {};
+                                  if (normalizePoolText(src.match) !== normalizePoolText(dst.matchName)) return false;
+                                  if (normalizePoolText(src.prediction) !== normalizePoolText(dst.market)) return false;
+                                  const so = Number(src.odd) || 0;
+                                  const dox = Number(dst.odd) || 0;
+                                  if (!(Math.abs(so - dox) < 0.011)) return false;
+                              }
+                              return true;
+                          }),
+                      ),
+                  );
+              };
 
               const renderExpressBundlesGrid = (bundles, listTabLocal, keyPrefix = '', showDeleteButton = true) => (
                   <div className="mt-2 grid w-full min-w-0 grid-cols-1 gap-1.5 sm:grid-cols-3">
@@ -6641,6 +7106,7 @@
                                   String(p.bundle.id) === String(b.id) &&
                                   p.status === 'PENDING',
                           );
+                          const bundleInOpenPool = bundleExistsInOpenPools(b);
                           return (
                           <div
                               key={`${keyPrefix}${String(b.id)}`}
@@ -6666,7 +7132,7 @@
                                   ) : null}
                                   <button
                                       type="button"
-                                      aria-pressed={bundleInLineStrategy}
+                                      aria-pressed={bundleInLineStrategy || bundleInOpenPool}
                                       onMouseDown={(e) => e.stopPropagation()}
                                       onClick={(e) => {
                                           e.preventDefault();
@@ -6674,20 +7140,36 @@
                                           openLineStrategyDollarModal(b);
                                       }}
                                       title={
-                                          bundleInLineStrategy
-                                              ? 'Уже в стратегии «Линия» (ожидает). Можно добавить ещё раз — открыть окно'
-                                              : 'Добавить купон в стратегию с «Главная»'
+                                          bundleInLineStrategy && bundleInOpenPool
+                                              ? 'Уже добавлен в стратегию «Линия» и в открытый пул. Можно открыть окно и добавить в другое место.'
+                                              : bundleInLineStrategy
+                                                ? 'Уже в стратегии «Линия» (ожидает). Можно добавить ещё раз — открыть окно'
+                                                : bundleInOpenPool
+                                                  ? 'Уже добавлен в открытый пул. Можно открыть окно и выбрать другой пул/добавить в стратегию.'
+                                                  : 'Добавить купон в стратегию с «Главная» или в «Пул лесенок»'
                                       }
                                       className={
-                                          bundleInLineStrategy
+                                          bundleInLineStrategy && bundleInOpenPool
+                                              ? 'relative z-[5] shrink-0 inline-flex cursor-pointer items-center justify-center rounded border border-cyan-300/80 bg-cyan-950/45 p-1 text-cyan-100 shadow-[0_0_0_1px_rgba(34,211,238,0.4)] transition hover:border-cyan-200 hover:bg-cyan-900/55 hover:text-white'
+                                              : bundleInLineStrategy
                                               ? 'relative z-[5] shrink-0 inline-flex cursor-pointer items-center justify-center rounded border border-emerald-400/75 bg-emerald-950/55 p-1 text-emerald-100 shadow-[0_0_0_1px_rgba(52,211,153,0.35)] transition hover:border-emerald-300 hover:bg-emerald-900/60 hover:text-white'
-                                              : 'relative z-[5] shrink-0 inline-flex cursor-pointer items-center justify-center rounded border border-emerald-600/45 bg-black/25 p-1 text-slate-400 transition hover:border-emerald-400/60 hover:bg-emerald-950/40 hover:text-emerald-200'
+                                              : bundleInOpenPool
+                                                ? 'relative z-[5] shrink-0 inline-flex cursor-pointer items-center justify-center rounded border border-teal-400/70 bg-teal-950/50 p-1 text-teal-100 shadow-[0_0_0_1px_rgba(45,212,191,0.35)] transition hover:border-teal-300 hover:bg-teal-900/60 hover:text-white'
+                                                : 'relative z-[5] shrink-0 inline-flex cursor-pointer items-center justify-center rounded border border-emerald-600/45 bg-black/25 p-1 text-slate-400 transition hover:border-emerald-400/60 hover:bg-emerald-950/40 hover:text-emerald-200'
                                       }
                                   >
                                       <CircleDollarSign
                                           size={16}
                                           aria-hidden
-                                          className={bundleInLineStrategy ? 'text-emerald-200' : ''}
+                                          className={
+                                              bundleInLineStrategy && bundleInOpenPool
+                                                  ? 'text-cyan-100'
+                                                  : bundleInLineStrategy
+                                                    ? 'text-emerald-200'
+                                                    : bundleInOpenPool
+                                                      ? 'text-teal-100'
+                                                      : ''
+                                          }
                                       />
                                   </button>
                                   <div className="ml-auto flex flex-wrap items-center justify-end gap-1">
@@ -6887,7 +7369,7 @@
               };
 
               return (
-                  <div className="mx-auto min-w-0 max-w-5xl space-y-6 overflow-visible px-0 pb-10 sm:px-1">
+                  <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6 overflow-visible px-0 pb-10 sm:px-1">
                       <details className="group rounded-xl border border-fuchsia-500/35 bg-fuchsia-950/25 text-fuchsia-100 shadow-inner open:bg-fuchsia-950/35">
                           <summary className="cursor-pointer list-none px-3 py-2.5 text-sm font-bold text-fuchsia-50/95 marker:content-none [&::-webkit-details-marker]:hidden flex items-center gap-2 select-none hover:bg-fuchsia-900/20 rounded-xl">
                               <ChevronDown size={16} className="shrink-0 text-fuchsia-300/90 transition-transform group-open:rotate-180" aria-hidden />
@@ -6903,7 +7385,7 @@
                           </div>
                       </details>
 
-                      <div className="relative z-40 min-w-0 max-w-full overflow-x-hidden overflow-y-visible rounded-xl border border-fuchsia-500/35 bg-slate-900/90 p-2 shadow-md backdrop-blur-md sm:p-2.5">
+                      <div className="relative z-40 min-w-0 max-w-full overflow-visible rounded-xl border border-fuchsia-500/35 bg-slate-900/90 p-2 shadow-md backdrop-blur-md sm:p-2.5">
                           <div className="mb-1.5 flex flex-col gap-2 min-[520px]:flex-row min-[520px]:flex-wrap min-[520px]:items-center min-[520px]:justify-between">
                               <h3 className="min-w-0 text-[10px] font-black uppercase tracking-wide text-fuchsia-200/95">Добавить в линию</h3>
                               <button
@@ -6914,7 +7396,7 @@
                                   Добавить матч
                               </button>
                           </div>
-                          <div className="flex min-w-0 max-w-full flex-wrap items-end gap-x-2 gap-y-2 overflow-x-hidden overflow-y-visible">
+                          <div className="flex min-w-0 max-w-full flex-wrap items-end gap-x-2 gap-y-2 overflow-visible">
                               <div className="min-w-0 basis-full sm:basis-[min(100%,10rem)] sm:max-w-[min(100%,15rem)] sm:flex-1">
                                   <label className="mb-0.5 block text-[9px] font-bold uppercase tracking-wide text-slate-500">Лига</label>
                                   <select
@@ -6981,7 +7463,7 @@
                                   {expressBuilderTimeMenuOpen ? (
                                       <div
                                           role="listbox"
-                                          className="absolute left-0 top-full z-[200] mt-0.5 box-border w-[6rem] max-h-[8rem] overflow-y-auto overflow-x-hidden overscroll-contain rounded-md border border-slate-600 bg-slate-950 py-0.5 pl-1 pr-2 shadow-xl [scrollbar-gutter:stable] custom-scrollbar"
+                                          className="absolute left-0 top-full z-[320] mt-0.5 box-border w-full min-w-full max-h-[8rem] overflow-y-auto overflow-x-hidden overscroll-contain rounded-md border border-slate-600 bg-slate-950 py-0.5 pl-1 pr-2 shadow-xl [scrollbar-gutter:stable] custom-scrollbar"
                                       >
                                           <button
                                               type="button"
@@ -7115,7 +7597,7 @@
                                       {expressBuilderO1MenuOpen ? (
                                           <div
                                               role="listbox"
-                                              className="absolute left-0 top-full z-[200] mt-0.5 box-border w-[6rem] max-h-[8rem] overflow-y-auto overflow-x-hidden overscroll-contain rounded-md border border-slate-600 bg-slate-950 py-0.5 pl-1 pr-2 shadow-xl [scrollbar-gutter:stable] custom-scrollbar"
+                                              className="absolute left-0 top-full z-[320] mt-0.5 box-border w-full min-w-full max-h-[8rem] overflow-y-auto overflow-x-hidden overscroll-contain rounded-md border border-slate-600 bg-slate-950 py-0.5 pl-1 pr-2 shadow-xl [scrollbar-gutter:stable] custom-scrollbar"
                                           >
                                               <button
                                                   type="button"
@@ -7213,7 +7695,7 @@
                                       {expressBuilderOxMenuOpen ? (
                                           <div
                                               role="listbox"
-                                              className="absolute left-0 top-full z-[200] mt-0.5 box-border w-[6rem] max-h-[8rem] overflow-y-auto overflow-x-hidden overscroll-contain rounded-md border border-slate-600 bg-slate-950 py-0.5 pl-1 pr-2 shadow-xl [scrollbar-gutter:stable] custom-scrollbar"
+                                              className="absolute left-0 top-full z-[320] mt-0.5 box-border w-full min-w-full max-h-[8rem] overflow-y-auto overflow-x-hidden overscroll-contain rounded-md border border-slate-600 bg-slate-950 py-0.5 pl-1 pr-2 shadow-xl [scrollbar-gutter:stable] custom-scrollbar"
                                           >
                                               <button
                                                   type="button"
@@ -7311,7 +7793,7 @@
                                       {expressBuilderO2MenuOpen ? (
                                           <div
                                               role="listbox"
-                                              className="absolute left-0 top-full z-[200] mt-0.5 box-border w-[6rem] max-h-[8rem] overflow-y-auto overflow-x-hidden overscroll-contain rounded-md border border-slate-600 bg-slate-950 py-0.5 pl-1 pr-2 shadow-xl [scrollbar-gutter:stable] custom-scrollbar"
+                                              className="absolute left-0 top-full z-[320] mt-0.5 box-border w-full min-w-full max-h-[8rem] overflow-y-auto overflow-x-hidden overscroll-contain rounded-md border border-slate-600 bg-slate-950 py-0.5 pl-1 pr-2 shadow-xl [scrollbar-gutter:stable] custom-scrollbar"
                                           >
                                               <button
                                                   type="button"
@@ -7757,7 +8239,7 @@
                                   onClick={addRow}
                                   className="rounded-xl bg-fuchsia-700 hover:bg-fuchsia-600 text-white px-4 py-2.5 text-sm font-bold border border-fuchsia-500/50 transition-colors"
                               >
-                                  + Добавить прогноз
+                                  + Добавить прогноз вручную
                               </button>
                               <button
                                   type="button"
@@ -8021,9 +8503,9 @@
 
           // --- РЕНДЕРЕРЫ ---
           const renderTabs = () => (
-              <div className="mb-6 w-full min-w-0 max-w-full pr-14 sm:pr-16">
+              <div className="mb-6 w-full min-w-0 max-w-full px-14 sm:px-16">
                   <div className="overflow-x-auto overflow-y-visible pb-2 -mx-0.5 px-0.5 custom-scrollbar">
-                      <div className="bg-slate-900/80 p-1 sm:p-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-md inline-flex flex-nowrap items-center gap-1 sm:gap-2 shadow-2xl max-w-none">
+                      <div className="mx-auto flex w-max flex-nowrap items-center gap-1 rounded-2xl border border-slate-700/50 bg-slate-900/80 p-1 shadow-2xl backdrop-blur-md sm:gap-2 sm:p-1.5 max-w-none">
                           <button onClick={() => setActiveTab('home')} className={`shrink-0 whitespace-nowrap px-2.5 py-2 sm:px-4 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base flex items-center gap-1.5 sm:gap-2 transition-all ${activeTab === 'home' ? 'bg-gradient-to-r from-sky-600 to-cyan-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
                               <HomeIcon size={18} className={activeTab === 'home' ? "text-cyan-100" : ""} /> Главная
                           </button>
@@ -8052,7 +8534,7 @@
                   (parseFloat(mainBank) || 0) - (globalHistoryOutcomes.pendingHeld || 0) + poolHomeBankAdjust,
               );
               return (
-              <div className="mx-auto max-w-4xl rounded-2xl border border-red-500/30 bg-slate-900/80 p-3 shadow-2xl backdrop-blur-xl sm:p-6">
+              <div className="mx-auto w-full min-w-0 max-w-6xl rounded-2xl border border-red-500/30 bg-slate-900/80 p-3 shadow-2xl backdrop-blur-xl sm:p-6">
                   <div className="bg-red-900/30 border border-red-500/50 p-4 rounded-xl mb-6 text-red-100 text-sm shadow-inner w-full">
                       💡 <b>Догон с учётом основы:</b> «Уже поставлено» — сумма текущей ставки в риске; «Возможный выигрыш» — полная выплата по ней при заходе (gross). Ставка догона:{' '}
                       <b className="text-white">(цель + уже поставлено + сумма сливов догона) / (кэф − 1)</b>. Второй вариант — выровнять два исхода:{' '}
@@ -8457,31 +8939,31 @@
               const next = FONT_PRESETS[(i < 0 ? 0 : i + 1) % FONT_PRESETS.length];
               setUiFontId(next.id);
           };
-          const themeCycleLabel = (t) => (t === 'slate' ? 'Тёмная' : t === 'day' ? 'Светлая' : 'Digital Blue');
+          const themeCycleLabel = (t) => (t === 'slate' ? 'Тёмная' : t === 'lightGray' ? 'Светло-серая' : 'Песочная');
           const cycleUiTheme = () =>
               setUiTheme((t) => {
-                  if (t === 'slate') return 'day';
-                  if (t === 'day') return 'digitalBlue';
+                  if (t === 'slate') return 'lightGray';
+                  if (t === 'lightGray') return 'sand';
                   return 'slate';
               });
           const fabRoundSmall =
               'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border shadow-md backdrop-blur-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/50 active:scale-95';
           const fabThemeBtnClass =
-              uiTheme === 'day'
-                  ? 'border-slate-300/90 bg-white/90 text-amber-600 hover:bg-white'
-                  : uiTheme === 'digitalBlue'
-                  ? 'border-[#0066FF]/55 bg-[#cce0ff]/95 text-[#0052cc] hover:bg-[#e5f0ff]'
+              uiTheme === 'lightGray'
+                  ? 'border-slate-300/90 bg-slate-50/95 text-slate-700 hover:bg-white'
+                  : uiTheme === 'sand'
+                  ? 'border-amber-300/80 bg-amber-50/95 text-amber-800 hover:bg-amber-50'
                   : 'border-slate-500/60 bg-slate-950/88 text-amber-300 hover:border-sky-400/45 hover:bg-slate-900/90';
           const fabFontBtnClass =
-              uiTheme === 'day'
-                  ? 'border-slate-300/90 bg-white/90 text-slate-800 hover:bg-white'
-                  : uiTheme === 'digitalBlue'
-                  ? 'border-[#0066FF]/50 bg-white/95 text-[#001433] hover:bg-white'
+              uiTheme === 'lightGray'
+                  ? 'border-slate-300/90 bg-slate-50/95 text-slate-800 hover:bg-white'
+                  : uiTheme === 'sand'
+                  ? 'border-amber-300/80 bg-amber-50/95 text-amber-900 hover:bg-amber-50'
                   : 'border-slate-500/60 bg-slate-950/88 text-slate-100 hover:border-sky-400/45 hover:bg-slate-900/90';
 
           return (
             <div
-                data-app-theme={uiTheme}
+                data-app-theme={uiTheme === 'lightGray' ? 'day' : uiTheme}
                 data-app-font={uiFontId}
                 className="relative min-h-screen min-w-0 max-w-[100vw] overflow-x-hidden bg-cover bg-center bg-fixed p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-[15px] antialiased md:p-4"
                 style={{
@@ -8514,7 +8996,7 @@
                       aria-label={`Сменить тему оформления, сейчас ${themeCycleLabel(uiTheme)}`}
                       className={`${fabRoundSmall} ${fabThemeBtnClass}`}
                   >
-                      {uiTheme === 'slate' ? <MoonIcon size={17} /> : uiTheme === 'day' ? <SunIcon size={17} /> : <DigitalBlueThemeIcon size={17} />}
+                      {uiTheme === 'slate' ? <MoonIcon size={17} /> : uiTheme === 'lightGray' ? <SunIcon size={17} /> : <DigitalBlueThemeIcon size={17} />}
                   </button>
               </div>
 
@@ -8850,20 +9332,28 @@
                           {lineStrategyDollarModal.err ? (
                               <p className="mt-2 text-sm text-red-300 font-bold">{lineStrategyDollarModal.err}</p>
                           ) : null}
-                          <label className="mt-3 block text-[10px] font-bold uppercase text-violet-300 tracking-wide">Стратегия</label>
-                          <select
-                              value={lineStrategyDollarModal.strategyId || ''}
-                              onChange={(e) =>
-                                  setLineStrategyDollarModal((m) => (m ? { ...m, strategyId: e.target.value, err: '' } : m))
-                              }
-                              className="mt-1 w-full rounded-lg border border-violet-600/50 bg-slate-950 px-3 py-2 text-sm text-white"
-                          >
-                              {(lineStrategiesData.strategies || []).map((st) => (
-                                  <option key={st.id} value={st.id}>
-                                      {st.name} · кошелёк {formatUSD(st.bank, 2)}
-                                  </option>
-                              ))}
-                          </select>
+                          {(lineStrategiesData.strategies || []).length > 0 ? (
+                              <>
+                                  <label className="mt-3 block text-[10px] font-bold uppercase text-violet-300 tracking-wide">Стратегия</label>
+                                  <select
+                                      value={lineStrategyDollarModal.strategyId || ''}
+                                      onChange={(e) =>
+                                          setLineStrategyDollarModal((m) => (m ? { ...m, strategyId: e.target.value, err: '' } : m))
+                                      }
+                                      className="mt-1 w-full rounded-lg border border-violet-600/50 bg-slate-950 px-3 py-2 text-sm text-white"
+                                  >
+                                      {(lineStrategiesData.strategies || []).map((st) => (
+                                          <option key={st.id} value={st.id}>
+                                              {st.name} · кошелёк {formatUSD(st.bank, 2)}
+                                          </option>
+                                      ))}
+                                  </select>
+                              </>
+                          ) : (
+                              <p className="mt-3 rounded-md border border-slate-700 bg-slate-950/60 px-3 py-2 text-xs text-slate-400">
+                                  Нет стратегий на «Главная». Можно добавить купон сразу в «Пул лесенок» ниже.
+                              </p>
+                          )}
                           <label className="mt-3 block text-[10px] font-bold uppercase text-slate-400 tracking-wide">Сумма ставки ($)</label>
                           <input
                               type="number"
@@ -8875,6 +9365,38 @@
                               }
                               className="mt-1 w-full rounded-lg border border-slate-600 bg-slate-950 px-3 py-2 text-sm font-mono text-white"
                           />
+                          <div className="mt-4 rounded-xl border border-teal-500/35 bg-teal-950/20 p-3">
+                              <p className="text-[11px] font-black uppercase tracking-wide text-teal-200">В «Пул лесенок»</p>
+                              <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+                                  Купон запишется в доступный шаг с минимальной ставкой (при равной сумме — меньший номер шага).
+                              </p>
+                              {lineStrategyDollarModal.poolErr ? (
+                                  <p className="mt-2 text-sm font-bold text-red-300">{lineStrategyDollarModal.poolErr}</p>
+                              ) : null}
+                              <label className="mt-2 block text-[10px] font-bold uppercase tracking-wide text-teal-300/90">
+                                  Открытый пул
+                              </label>
+                              <select
+                                  value={lineStrategyDollarModal.poolId || ''}
+                                  onChange={(e) =>
+                                      setLineStrategyDollarModal((m) => (m ? { ...m, poolId: e.target.value, poolErr: '' } : m))
+                                  }
+                                  className="mt-1 w-full rounded-lg border border-teal-600/50 bg-slate-950 px-3 py-2 text-sm text-white"
+                              >
+                                  {(poolMulti.pools || [])
+                                      .filter((p) => !p.isClosed)
+                                      .map((p) => (
+                                          <option key={p.id} value={p.id}>
+                                              {p.name}
+                                          </option>
+                                      ))}
+                              </select>
+                              {(poolMulti.pools || []).filter((p) => !p.isClosed).length === 0 ? (
+                                  <p className="mt-2 text-[11px] text-slate-500">
+                                      Нет открытых пулов. Откройте или создайте пул во вкладке «Пул лесенок».
+                                  </p>
+                              ) : null}
+                          </div>
                           <div className="mt-3 max-h-32 overflow-y-auto rounded border border-slate-700/60 bg-slate-950/80 p-2 text-[11px] text-slate-300 custom-scrollbar">
                               <span className="font-mono font-bold text-violet-200">@{Number(lineStrategyDollarModal.bundle.totalOdd).toFixed(2)}</span>
                               <ul className="mt-1 space-y-0.5">
@@ -8897,8 +9419,16 @@
                                   type="button"
                                   className="rounded-xl border border-violet-500/60 bg-violet-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-violet-500 transition-colors"
                                   onClick={commitLineStrategyDollarModal}
+                                  disabled={(lineStrategiesData.strategies || []).length === 0}
                               >
-                                  Добавить
+                                  В стратегию
+                              </button>
+                              <button
+                                  type="button"
+                                  className="rounded-xl border border-teal-500/60 bg-teal-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-teal-600 transition-colors"
+                                  onClick={commitLineBundleToPoolFromModal}
+                              >
+                                  В пул
                               </button>
                           </div>
                       </div>
