@@ -5078,7 +5078,7 @@
               setPoolMulti((pm) => (pm.pools.some((p) => p.id === poolId) ? { ...pm, activePoolId: poolId } : pm));
           };
           const poolRenameActive = (name) => {
-              poolUpdateActiveShell((p) => ({ ...p, name: String(name).slice(0, 48) || p.name }));
+              poolUpdateActiveShell((p) => ({ ...p, name: String(name ?? '').slice(0, 48) }));
           };
 
           const renderPoolTab = () => {
@@ -6746,7 +6746,7 @@
                           </div>
                       </details>
 
-                      <div className="relative z-40 min-w-0 overflow-visible rounded-xl border border-fuchsia-500/35 bg-slate-900/90 p-2 shadow-md backdrop-blur-md sm:p-2.5">
+                      <div className="relative z-40 min-w-0 max-w-full overflow-x-hidden overflow-y-visible rounded-xl border border-fuchsia-500/35 bg-slate-900/90 p-2 shadow-md backdrop-blur-md sm:p-2.5">
                           <div className="mb-1.5 flex flex-col gap-2 min-[520px]:flex-row min-[520px]:flex-wrap min-[520px]:items-center min-[520px]:justify-between">
                               <h3 className="min-w-0 text-[10px] font-black uppercase tracking-wide text-fuchsia-200/95">Добавить в линию</h3>
                               <button
@@ -6757,7 +6757,7 @@
                                   Добавить матч
                               </button>
                           </div>
-                          <div className="flex min-w-0 flex-wrap items-end gap-x-2 gap-y-2 overflow-visible">
+                          <div className="flex min-w-0 max-w-full flex-wrap items-end gap-x-2 gap-y-2 overflow-x-hidden overflow-y-visible">
                               <div className="min-w-0 basis-full sm:basis-[min(100%,10rem)] sm:max-w-[min(100%,15rem)] sm:flex-1">
                                   <label className="mb-0.5 block text-[9px] font-bold uppercase tracking-wide text-slate-500">Лига</label>
                                   <select
@@ -6891,8 +6891,8 @@
                                       ))}
                                   </select>
                               </div>
-                              <div className="flex w-full min-w-0 basis-full flex-nowrap items-end gap-x-1.5 xl:basis-auto xl:w-auto xl:max-w-none xl:shrink-0">
-                                  <div ref={expressBuilderO1MenuRef} className="relative z-20 w-[min(100%,6rem)] shrink-0 overflow-visible">
+                              <div className="grid w-full min-w-0 max-w-full grid-cols-3 gap-1.5 basis-full xl:flex xl:w-auto xl:basis-auto xl:max-w-none xl:shrink-0 xl:flex-nowrap xl:gap-x-1.5">
+                                  <div ref={expressBuilderO1MenuRef} className="relative z-20 min-w-0 w-full max-w-full overflow-visible xl:w-24 xl:max-w-none xl:shrink-0">
                                       <label className="mb-0.5 block text-center text-[11px] font-bold text-emerald-500/90 sm:text-xs" htmlFor="express-line-builder-o1-btn">
                                           1
                                       </label>
@@ -6990,7 +6990,7 @@
                                           </div>
                                       ) : null}
                                   </div>
-                                  <div ref={expressBuilderOxMenuRef} className="relative z-20 w-[min(100%,6rem)] shrink-0 overflow-visible">
+                                  <div ref={expressBuilderOxMenuRef} className="relative z-20 min-w-0 w-full max-w-full overflow-visible xl:w-24 xl:max-w-none xl:shrink-0">
                                       <label className="mb-0.5 block text-center text-[11px] font-bold text-slate-500 sm:text-xs" htmlFor="express-line-builder-ox-btn">
                                           X
                                       </label>
@@ -7088,7 +7088,7 @@
                                           </div>
                                       ) : null}
                                   </div>
-                                  <div ref={expressBuilderO2MenuRef} className="relative z-20 w-[min(100%,6rem)] shrink-0 overflow-visible">
+                                  <div ref={expressBuilderO2MenuRef} className="relative z-20 min-w-0 w-full max-w-full overflow-visible xl:w-24 xl:max-w-none xl:shrink-0">
                                       <label className="mb-0.5 block text-center text-[11px] font-bold text-sky-400/90 sm:text-xs" htmlFor="express-line-builder-o2-btn">
                                           2
                                       </label>
