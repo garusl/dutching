@@ -60,7 +60,7 @@
         [data-app-theme="day"] .bg-slate-800\/60,
         [data-app-theme="day"] .bg-slate-800\/50,
         [data-app-theme="day"] .bg-slate-800\/40 {
-            background-color: rgba(243, 244, 246, 0.96) !important;
+            background-color: rgba(249, 250, 251, 0.98) !important;
         }
         [data-app-theme="day"] .bg-slate-950\/15,
         [data-app-theme="day"] .bg-slate-900\/15,
@@ -82,7 +82,7 @@
         [data-app-theme="day"] .border-slate-600\/80,
         [data-app-theme="day"] .border-slate-600\/70,
         [data-app-theme="day"] .border-slate-600\/50 {
-            border-color: rgba(156, 163, 175, 0.65) !important;
+            border-color: rgba(100, 116, 139, 0.55) !important;
         }
         [data-app-theme="day"] .text-white {
             color: #111827 !important;
@@ -130,34 +130,40 @@
         [data-app-theme="day"] [class*="bg-teal-"],
         [data-app-theme="day"] [class*="bg-cyan-"],
         [data-app-theme="day"] [class*="bg-blue-"],
+        [data-app-theme="day"] [class*="bg-sky-"],
         [data-app-theme="day"] [class*="bg-fuchsia-"],
         [data-app-theme="day"] [class*="bg-violet-"],
         [data-app-theme="day"] [class*="bg-rose-"],
         [data-app-theme="day"] [class*="bg-red-"],
-        [data-app-theme="day"] [class*="bg-amber-"] {
-            background-color: rgba(229, 231, 235, 0.92) !important;
+        [data-app-theme="day"] [class*="bg-amber-"],
+        [data-app-theme="day"] [class*="bg-orange-"] {
+            background-color: rgba(241, 245, 249, 0.96) !important;
         }
         [data-app-theme="day"] [class*="border-emerald-"],
         [data-app-theme="day"] [class*="border-teal-"],
         [data-app-theme="day"] [class*="border-cyan-"],
         [data-app-theme="day"] [class*="border-blue-"],
+        [data-app-theme="day"] [class*="border-sky-"],
         [data-app-theme="day"] [class*="border-fuchsia-"],
         [data-app-theme="day"] [class*="border-violet-"],
         [data-app-theme="day"] [class*="border-rose-"],
         [data-app-theme="day"] [class*="border-red-"],
-        [data-app-theme="day"] [class*="border-amber-"] {
-            border-color: rgba(156, 163, 175, 0.65) !important;
+        [data-app-theme="day"] [class*="border-amber-"],
+        [data-app-theme="day"] [class*="border-orange-"] {
+            border-color: rgba(148, 163, 184, 0.72) !important;
         }
         [data-app-theme="day"] [class*="text-emerald-"],
         [data-app-theme="day"] [class*="text-teal-"],
         [data-app-theme="day"] [class*="text-cyan-"],
         [data-app-theme="day"] [class*="text-blue-"],
+        [data-app-theme="day"] [class*="text-sky-"],
         [data-app-theme="day"] [class*="text-fuchsia-"],
         [data-app-theme="day"] [class*="text-violet-"],
         [data-app-theme="day"] [class*="text-rose-"],
         [data-app-theme="day"] [class*="text-red-"],
-        [data-app-theme="day"] [class*="text-amber-"] {
-            color: #374151 !important;
+        [data-app-theme="day"] [class*="text-amber-"],
+        [data-app-theme="day"] [class*="text-orange-"] {
+            color: #0f172a !important;
         }
         [data-app-theme="day"] .shadow-2xl,
         [data-app-theme="day"] .shadow-xl,
@@ -2321,9 +2327,9 @@
         const THEME_STYLES = {
             slate: { pageBg: '#0f172a', pageFg: '#f1f5f9', overlay: 'rgba(2, 6, 23, 0.86)', defaultFontId: 'outfit' },
             lightGray: {
-                pageBg: '#f3f4f6',
+                pageBg: '#eef2f6',
                 pageFg: '#111827',
-                overlay: 'rgba(243, 244, 246, 0.72)',
+                overlay: 'rgba(248, 250, 252, 0.86)',
                 defaultFontId: 'lexend',
             },
             sand: {
@@ -9080,11 +9086,6 @@
 
           const themeColors = uiThemeStyle(uiTheme);
           const activeFontPreset = fontPresetById(uiFontId);
-          const cycleUiFont = () => {
-              const i = FONT_PRESETS.findIndex((f) => f.id === uiFontId);
-              const next = FONT_PRESETS[(i < 0 ? 0 : i + 1) % FONT_PRESETS.length];
-              setUiFontId(next.id);
-          };
           const themeCycleLabel = (t) => (t === 'slate' ? 'Тёмная' : t === 'lightGray' ? 'Светло-серая' : 'Песочная');
           const cycleUiTheme = () =>
               setUiTheme((t) => {
@@ -9100,12 +9101,6 @@
                   : uiTheme === 'sand'
                   ? 'border-amber-300/80 bg-amber-50/95 text-amber-800 hover:bg-amber-50'
                   : 'border-slate-500/60 bg-slate-950/88 text-amber-300 hover:border-sky-400/45 hover:bg-slate-900/90';
-          const fabFontBtnClass =
-              uiTheme === 'lightGray'
-                  ? 'border-slate-300/90 bg-slate-50/95 text-slate-800 hover:bg-white'
-                  : uiTheme === 'sand'
-                  ? 'border-amber-300/80 bg-amber-50/95 text-amber-900 hover:bg-amber-50'
-                  : 'border-slate-500/60 bg-slate-950/88 text-slate-100 hover:border-sky-400/45 hover:bg-slate-900/90';
 
           return (
             <div
@@ -9125,16 +9120,6 @@
                   role="toolbar"
                   aria-label="Оформление"
               >
-                  <button
-                      type="button"
-                      onClick={cycleUiFont}
-                      title={`Шрифт: ${activeFontPreset.label} (нажмите — следующий)`}
-                      aria-label={`Сменить шрифт, сейчас ${activeFontPreset.label}`}
-                      style={{ fontFamily: activeFontPreset.family }}
-                      className={`${fabRoundSmall} text-[10px] font-black leading-none tracking-tight ${fabFontBtnClass}`}
-                  >
-                      {activeFontPreset.mark}
-                  </button>
                   <button
                       type="button"
                       onClick={cycleUiTheme}
