@@ -3706,12 +3706,10 @@
                   const O = templateOdd > 1 ? templateOdd : 1.01;
                   const nextStake = chaserStakeFromParams(T, A, totalChaseLosses, O);
                   newSteps.push({ id: Date.now(), stake: nextStake, odd: O, result: 'PENDING' });
-                  setMainBank((parseFloat(mainBank) - newSteps[index].stake).toFixed(2));
               } else if (result === 'WON') {
                   const winAmount = newSteps[index].stake * newSteps[index].odd;
                   const stakesSum = newSteps.slice(0, index + 1).reduce((sum, s) => sum + (Number(s.stake) || 0), 0);
                   const netProfit = winAmount - stakesSum;
-                  setMainBank((parseFloat(mainBank) + netProfit).toFixed(2));
                   newSteps.push({ id: Date.now(), isDone: true, netProfit });
               }
               setChaserSteps(newSteps);
@@ -7985,8 +7983,8 @@
                           </div>
                       </div>
 
-                      <div className="relative z-10 rounded-2xl border border-slate-600/80 bg-slate-900/90 overflow-visible shadow-xl backdrop-blur-md">
-                          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700/80 bg-slate-950/80 px-4 py-3">
+                      <div className="relative isolate z-10 overflow-visible rounded-2xl border border-slate-700/70 bg-slate-950/95 shadow-lg [transform:translateZ(0)]">
+                          <div className="flex flex-wrap items-center justify-between gap-2 rounded-t-2xl border-b border-slate-700/80 bg-slate-950/90 px-4 py-3">
                               <h3 className="text-white font-black text-sm sm:text-base tracking-tight">Линия дня ({expressLineMatchCount})</h3>
                               <div className="flex items-center gap-2">
                                   {expressLineDeleteMode ? (
@@ -8016,8 +8014,9 @@
                               </div>
                           </div>
                           <div className="divide-y divide-slate-700/55 overflow-visible">
-                              {expressLineDayData.map((league) => {
+                              {expressLineDayData.map((league, leagueIdx) => {
                                   const leagueOpen = expressLineLeagueExpanded[league.id] !== false;
+                                  const isLastLeague = leagueIdx === expressLineDayData.length - 1;
                                   const leagueCountry = String(league.title || '').split(':')[0].trim();
                                   const leagueFlagSrc =
                                       leagueCountry === 'Англия'
@@ -8036,7 +8035,7 @@
                                           ? 'https://flagcdn.com/w20/un.png'
                                           : 'https://flagcdn.com/w20/un.png';
                                   return (
-                                      <div key={league.id} className="bg-slate-900/40">
+                                      <div key={league.id} className={`bg-slate-900/40 ${isLastLeague ? 'rounded-b-2xl' : ''}`}>
                                           <button
                                               type="button"
                                               onClick={() => toggleExpressLineLeague(league.id)}
@@ -8681,35 +8680,18 @@
               </div>
           );
 
-          const renderChaserTab = () => {
-              const chaserLiquidMain = poolMoney2(
-                  (parseFloat(mainBank) || 0) - (globalHistoryOutcomes.pendingHeld || 0) + poolHomeBankAdjust,
-              );
-              return (
+          const renderChaserTab = () => (
               <div className="mx-auto w-full min-w-0 max-w-6xl rounded-2xl border border-red-500/30 bg-slate-900/80 p-3 shadow-2xl backdrop-blur-xl sm:p-6">
                   <div className="bg-red-900/30 border border-red-500/50 p-4 rounded-xl mb-6 text-red-100 text-sm shadow-inner w-full">
                       💡 <b>Догон с учётом основы:</b> «Уже поставлено» — сумма текущей ставки в риске; «Возможный выигрыш» — полная выплата по ней при заходе (gross). Ставка догона:{' '}
                       <b className="text-white">(цель + уже поставлено + сумма сливов догона) / (кэф − 1)</b>. Второй вариант — выровнять два исхода:{' '}
                       <b className="text-white">(выигрыш + уже поставлено) / кэф</b>, если указана выплата по основе.
                   </div>
-                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-700 flex-wrap gap-4">
-                      <div className="flex items-center gap-3">
-                          <TrendingUp className="text-red-400" size={28} />
-                          <div>
-                              <h2 className="text-xl font-bold text-white uppercase">Умный Догон</h2>
-                              <p className="text-xs text-red-300">Цель, основа в риске и кэф — всё пересчитывается на лету</p>
-                          </div>
-                      </div>
-                      <div className="bg-slate-800 border border-slate-600 px-4 py-2 rounded-lg text-right max-w-[14rem]">
-                          <p className="text-[10px] text-slate-400 uppercase font-bold mb-0.5">Свободно (общий банк)</p>
-                          <p className={`text-lg font-bold tabular-nums ${chaserLiquidMain < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-                              {formatUSD(chaserLiquidMain, 2)}
-                          </p>
-                          {(globalHistoryOutcomes.pendingHeld || 0) > 0 ? (
-                              <p className="text-[9px] text-amber-400/90 mt-0.5">Учёт {formatUSD(parseFloat(mainBank) || 0, 2)} · в игре {formatUSD(globalHistoryOutcomes.pendingHeld, 2)}</p>
-                          ) : (
-                              <p className="text-[9px] text-slate-500 mt-0.5">Без ожидающих в истории</p>
-                          )}
+                  <div className="mb-6 flex items-center gap-3 border-b border-slate-700 pb-4">
+                      <TrendingUp className="text-red-400" size={28} />
+                      <div>
+                          <h2 className="text-xl font-bold text-white uppercase">Умный Догон</h2>
+                          <p className="text-xs text-red-300">Цель, основа в риске и кэф — всё пересчитывается на лету</p>
                       </div>
                   </div>
 
@@ -8830,7 +8812,7 @@
                                   {step.isDone ? (
                                       <div className="flex w-full flex-col items-center justify-center py-2 text-center font-bold text-emerald-400">
                                           <span className="text-xl">🎉 Цикл закрыт! Все минусы отбиты.</span>
-                                          <span className="mt-1 text-sm text-emerald-200">Чистая прибыль по шагам догона: +{formatUSD(step.netProfit, 2)} (учёт банка — сумма всех ставок шага).</span>
+                                          <span className="mt-1 text-sm text-emerald-200">Чистая прибыль по шагам догона: +{formatUSD(step.netProfit, 2)} (сумма всех ставок шага).</span>
                                           <button
                                               type="button"
                                               onClick={() => setChaserSteps([])}
@@ -8907,8 +8889,7 @@
                       </div>
                   )}
               </div>
-              );
-          };
+          );
 
           const renderMatchesGrid = () => {
               const gridTab = calcTab;
