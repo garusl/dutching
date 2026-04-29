@@ -8384,6 +8384,9 @@
                                       </div>
                                   );
                               })}
+                              {expressLineDayData.length === 0 ? (
+                                  <div className="h-3 rounded-b-2xl bg-slate-900/35" aria-hidden />
+                              ) : null}
                           </div>
                       </div>
 
